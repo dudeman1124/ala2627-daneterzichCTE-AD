@@ -62,10 +62,12 @@ player_name = input("What is your name, explorer? ").strip()
 if player_name == "":
     player_name = "Nobody"          # they just pressed enter
 
+
 print()
 print("Welcome, " + player_name + ".")
 print("You are standing in a dusty hall. There is a door NORTH")
 print("and a rug on the floor you could LOOK under.")
+print("There is also a desk that has some paperwork.")
 say("Type HELP if you get stuck, or QUIT to give up.")
 
 
@@ -76,14 +78,14 @@ say("Type HELP if you get stuck, or QUIT to give up.")
 while True:
     command = ask()
     moves = moves + 1
-
+    code = 1
     # -- commands that work anywhere ------------------------
     if command == "quit":
         say("You walk away. " + player_name + " lasted " + str(moves) + " moves.")
         break
 
     elif command == "help":
-        say("Try: LOOK, NORTH, SOUTH, TAKE KEY, OPEN VAULT, QUIT")
+        say("Try: LOOK, NORTH, SOUTH, TAKE KEY, OPEN VAULT, QUIT, INSPECT DESK")
 
     # -- the hall -------------------------------------------
     elif room == "hall":
@@ -105,6 +107,17 @@ while True:
             print("You step into a room with a huge steel door. The VAULT.")
             say("There is a way back SOUTH.")
 
+        elif command == "inspect desk":
+            print("You inspect the desk and it's paperwork. Nothing is special about it.")
+            print("But... there's a sticky note that says '9341'. Odd. Wonder what that")
+            print("could be for.")
+            print()
+
+        elif command == "upstairs-loft":
+            room = "upstairs"
+            print("You walk up the stairs and are now in the upstairs loft.")
+            say("There are two directions from here: NORTH or ATTIC.")
+
         else:
             say("You cannot do that here.")
 
@@ -117,12 +130,27 @@ while True:
             room = "hall"
             say("Back in the dusty hall.")
 
+        elif command == "secret":
+            print("A hidden door opens to a keypad.")
+            say("What is the code?")
+            code = 0
+            print(code)
+        elif command == "9341":
+            room = "hall-of-gold"
+            print("The keypad accepts this code.")
+            say("You are now in the Hall of Gold.")
+            say("Type in hall-of-gold to continue.")
+
+
         elif command == "open vault":
             if has_key:
                 print("The key turns. The door swings open.")
                 print("Inside: absolutely nothing. Someone beat you here.")
                 say("You win anyway, " + player_name + " — in " + str(moves) + " moves.")
+                print()
+                say("UNFORTUNATE ENDING")
                 break
+
             else:
                 say("It is locked. You need a key.")
 
@@ -130,7 +158,22 @@ while True:
             say("You cannot do that here.")
 
 
-# ============================================================
+
+
+ # -- the Hall of Gold ------------------------------------------
+    elif room == "hall-of-gold":
+       print()
+       print("Congratulations. You have found the Hall of Gold.")
+       print("This hall has enough gold to make your blood more")
+       print("valuable than gold itself.")
+       print()
+       say("You win, " + player_name + ", in " + str(moves) + " moves.")
+       print()
+       say("LUCKY STUMBLER ENDING")
+       break
+
+
+
 #  NOW MAKE IT YOURS
 #
 #  Do these in order. Run the game after EVERY one — if it
@@ -148,5 +191,5 @@ while True:
 #
 #  5. Give the player a real choice with two different endings.
 #
-#  COMMIT AFTER EACH ONE. That is your undo button.
+#
 # ============================================================
