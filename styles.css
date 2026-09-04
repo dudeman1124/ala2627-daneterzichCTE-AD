@@ -1,77 +1,186 @@
-/* ============================================================
-   styles.css — this is YOURS to change. That is the point.
-   Every value below is a decision somebody made. Change one,
-   commit, and look at what happened.
-   ============================================================ */
-
-/* The custom properties. Change a colour ONCE here and it
-   changes everywhere it is used further down. */
 :root {
-  --ink:        #1a1a1a;   /* body text */
-  --muted:      #5a6472;   /* quieter text */
-  --accent:     #0a6373;   /* links and rules — make this yours */
-  --paper:      #ffffff;
-  --line:       #e2e6ec;
-  --measure:    34rem;     /* how wide a line of text gets before it wraps */
+  --ink: #f4f7f5;
+  --muted: #afc0bd;
+  --accent: #93e2c9;
+  --accent-warm: #f0bd75;
+  --surface: rgba(19, 42, 47, 0.62);
+  --line: rgba(211, 246, 235, 0.18);
+  --shadow: 0 24px 70px rgba(4, 18, 21, 0.28);
 }
 
-/* A sensible reset. Without border-box, padding makes boxes
-   wider than you asked for, and nothing lines up. */
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 body {
-  margin: 0 auto;
-  padding: 3rem 1.25rem 4rem;
-  max-width: var(--measure);
-  background: var(--paper);
+  min-height: 100vh;
+  margin: 0;
+  padding: 4rem clamp(1.25rem, 5vw, 6rem);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(82, 155, 130, 0.28), transparent 30rem),
+    radial-gradient(circle at 88% 85%, rgba(173, 105, 73, 0.2), transparent 28rem),
+    #0c2227;
   color: var(--ink);
-  font: 1rem/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 1rem/1.65 Georgia, "Times New Roman", serif;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  content: "";
+  mask-image: linear-gradient(to bottom, black, transparent 75%);
+}
+
+header,
+main,
+footer {
+  width: min(100%, 62rem);
+  margin-inline: auto;
+}
+
+.glass-panel {
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(221, 255, 242, 0.13), transparent 42%), var(--surface);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.hero {
+  border-radius: 2rem;
+  padding: clamp(2rem, 6vw, 5rem);
+  animation: rise-in 700ms ease-out both;
+}
+
+.eyebrow,
+.card-index {
+  margin: 0 0 1.5rem;
+  color: var(--accent);
+  font: 700 0.72rem/1.2 Arial, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 h1 {
+  max-width: 8ch;
   margin: 0;
-  font-size: 2.15rem;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-size: clamp(3.4rem, 10vw, 7.5rem);
+  line-height: 0.88;
+  letter-spacing: -0.06em;
 }
 
 .tagline {
-  margin: 0.5rem 0 0;
+  max-width: 24rem;
+  margin: 2rem 0 0;
   color: var(--muted);
-  font-size: 1.05rem;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  font-style: italic;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.bento-card {
+  min-height: 18rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border-radius: 1.4rem;
+  animation: rise-in 700ms 120ms ease-out both;
+}
+
+.bento-card--wide {
+  grid-row: span 2;
+}
+
+.bento-card--learning {
+  animation-delay: 220ms;
+}
+
+.bento-card--contact {
+  min-height: 13rem;
+  animation-delay: 320ms;
 }
 
 h2 {
-  margin: 2.75rem 0 0.75rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--line);
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
+  margin: 0 0 1rem;
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
 }
 
-ul { margin: 0; padding-left: 1.1rem; }
-li { margin-bottom: 0.6rem; }
+ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+li {
+  margin-bottom: 0.85rem;
+}
+
+li::marker {
+  color: var(--accent-warm);
+}
 
 a {
   color: var(--accent);
-  text-underline-offset: 3px;
+  font-weight: 700;
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
 }
-a:hover { text-decoration: none; }
+
+a:hover {
+  text-decoration: none;
+}
 
 footer {
-  margin-top: 3.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line);
+  margin-top: 1.25rem;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
-/* Someone reading this on a phone is the common case, not the
-   edge case. Test it there before you call the page done. */
+.footer-note {
+  padding: 1rem 0 0.5rem;
+  border-top: 1px solid var(--line);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 30rem) {
-  body { padding-top: 2rem; }
-  h1   { font-size: 1.8rem; }
+  body {
+    padding-top: 1.5rem;
+  }
+
+  main {
+    grid-template-columns: 1fr;
+  }
+
+  .bento-card--wide {
+    grid-row: auto;
+  }
+
+  .hero {
+    border-radius: 1.4rem;
+  }
+
+  .bento-card {
+    min-height: auto;
+  }
 }
