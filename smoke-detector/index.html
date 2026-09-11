@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b0d">
+  <meta name="description" content="A browser-based smoke alarm sound simulator with manual and interval modes.">
+  <title>SMOKE DETECTOR // Sound Simulator</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="back-link" href="../">&lt; DT at ALA</a>
+      <p class="system-label"><span class="led led--green"></span>SIMULATION MODE / AUDIO READY</p>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">Home safety lab / browser instrument</p>
+        <h1>SMOKE<br><span>DETECTOR</span></h1>
+        <p class="hero-copy">A compact sound simulator for testing attention, timing, and interface ideas. Press the
+          test button for one alarm chirp, or set a custom interval for a repeating signal.</p>
+      </section>
+
+      <section class="safety-strip" aria-label="Safety notice">
+        <span class="safety-icon" aria-hidden="true">!</span>
+        <p><strong>Simulation only.</strong> This page is not a certified smoke alarm and cannot sense smoke, heat, or
+          fire. Test a real detector using its manufacturer button.</p>
+      </section>
+
+      <section class="instrument" aria-labelledby="instrument-title">
+        <div class="instrument-head">
+          <div>
+            <p class="eyebrow">01 / Signal console</p>
+            <h2 id="instrument-title">Choose a mode</h2>
+          </div>
+          <div class="status-readout" aria-live="polite">
+            <span class="led" id="status-led"></span>
+            <span id="status-text">READY FOR TEST</span>
+          </div>
+        </div>
+
+        <div class="console-grid">
+          <div class="alarm-visual" id="alarm-visual" aria-hidden="true">
+            <div class="alarm-ring alarm-ring--outer"></div>
+            <div class="alarm-ring alarm-ring--inner"></div>
+            <div class="alarm-core"><span></span></div>
+            <p>ALARM<br><small>SIMULATION</small></p>
+          </div>
+
+          <div class="controls">
+            <button class="primary-button" id="manual-beep" type="button"><span class="button-icon">▶</span> Manual
+              beep</button>
+            <p class="button-note">One short, high-frequency alarm chirp.</p>
+
+            <div class="divider"><span>or automate</span></div>
+
+            <div class="interval-control">
+              <label for="interval">Beep every</label>
+              <div class="input-row">
+                <input id="interval" type="number" min="1" max="3600" step="1" value="10" inputmode="numeric" required>
+                <span>seconds</span>
+              </div>
+            </div>
+            <div class="automation-toggle">
+              <label class="switch-label" for="auto-toggle">
+                <span><strong>Automatic beep</strong><small>Repeat using the interval above</small></span>
+                <input id="auto-toggle" type="checkbox" role="switch">
+                <span class="switch" aria-hidden="true"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="telemetry">
+          <div><span>MODE</span><strong id="mode-value">MANUAL</strong></div>
+          <div><span>NEXT BEEP</span><strong id="next-value">--</strong></div>
+          <div><span>BEEPS THIS SESSION</span><strong id="beep-count">0</strong></div>
+        </div>
+      </section>
+
+      <section class="how-it-works">
+        <div>
+          <p class="eyebrow">02 / Field notes</p>
+          <h2>Make noise<br>with intention.</h2>
+        </div>
+        <div class="notes">
+          <p>The simulator uses your browser's Web Audio API. Audio starts only after you interact with the page, which
+            is how modern browsers protect you from surprise sounds.</p>
+          <p>The automatic mode uses your chosen interval between the start of each chirp. Stop it any time; closing or
+            refreshing the page also ends the timer.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p><span>SMOKE-DETECTOR</span> // Sound simulator</p>
+      <p>Not a life-safety device.</p>
+    </footer>
+  </div>
+</body>
+
+</html>
