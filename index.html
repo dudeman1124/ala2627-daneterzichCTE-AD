@@ -6,10 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- CHANGE THIS. It is the name on the browser tab, and it is what Google shows. -->
-  <title>Dane Terzich — what you build Test</title>
+  <title>DT at ALA // Cyberpunk Interface</title>
 
   <!-- CHANGE THIS TOO. One sentence. It is what shows under your link when someone shares it. -->
-  <meta name="description" content="One sentence about who you are and what you make.">
+  <meta name="description" content="Dane Terzich's personal landing page for experiments in code, games, and football.">
+  <meta name="theme-color" content="#07090d">
 
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -55,6 +56,18 @@
     </section>
 
   </main>
+
+  <section class="terminal glass-panel" aria-labelledby="terminal-title">
+    <div class="terminal-bar">
+      <p id="terminal-title">Remote console</p>
+      <span aria-hidden="true">ONLINE</span>
+    </div>
+    <a class="terminal-command" href="https://ascii.live/rick" target="_blank" rel="noopener noreferrer">
+      <span class="terminal-prompt" aria-hidden="true">$</span> curl ascii.live/rick
+      <span class="terminal-cursor" aria-hidden="true"></span>
+    </a>
+    <p class="terminal-status">Click the command to open the live ASCII stream.</p>
+  </section>
 
   <footer class="footer-note">
     <p>Built by hand. Last updated <!-- change this when you change the page --> August 2026.</p>

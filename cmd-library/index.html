@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07100f">
+  <meta name="description"
+    content="A practical atlas of PowerShell commands that work in a standard Windows user session.">
+  <title>CMD LIBRARY // PowerShell Atlas</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <div class="site-shell">
+    <header class="masthead">
+      <a class="back-link" href="../">&lt; DT at ALA</a>
+      <p class="status-line"><span class="status-dot"></span>STANDARD USER MODE / READ-ONLY ATLAS</p>
+      <p class="kicker">PowerShell field guide / 2026</p>
+      <h1>CMD<br><em>LIBRARY</em></h1>
+      <div class="intro-row">
+        <p class="intro">A field guide to what Windows can reveal, inspect, automate, and organize from a normal user
+          account.</p>
+        <p class="boundary"><strong>Scope note</strong><br>Access still depends on your account, device policy, and the
+          target resource. Nothing here bypasses permissions.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="control-deck" aria-label="Library controls">
+        <div class="search-wrap">
+          <label for="command-search">Search commands</label>
+          <input id="command-search" type="search" placeholder="Try: network, process, files..." autocomplete="off">
+          <span class="shortcut">/</span>
+        </div>
+        <div class="filter-block">
+          <span class="control-label">Filter by domain</span>
+          <div class="filters" id="filters" role="list">
+            <button class="filter-button is-active" data-filter="all" type="button">All <span>18</span></button>
+            <button class="filter-button" data-filter="discover" type="button">Discover <span>5</span></button>
+            <button class="filter-button" data-filter="files" type="button">Files <span>4</span></button>
+            <button class="filter-button" data-filter="network" type="button">Network <span>4</span></button>
+            <button class="filter-button" data-filter="automate" type="button">Automate <span>5</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="library-heading" aria-labelledby="library-title">
+        <div>
+          <p class="section-label">INDEX / 00<span id="result-count">18</span></p>
+          <h2 id="library-title">The standard-user toolkit</h2>
+        </div>
+        <p class="sort-note">Click any command to copy<br><span>Paste into PowerShell to inspect it.</span></p>
+      </section>
+
+      <section class="command-grid" id="command-grid" aria-live="polite"></section>
+      <p class="empty-state" id="empty-state" hidden>No commands match that signal. Try a broader search.</p>
+
+      <section class="workflow-band">
+        <div>
+          <p class="section-label">FIELD NOTES / 03</p>
+          <h2>Use the shell like a lens.</h2>
+        </div>
+        <div class="workflow-copy">
+          <p>Start with observation: identify the machine, inspect a process, map a folder, test a connection. Then
+            compose small commands with pipes and filters.</p>
+          <code>Get-Process | Where-Object CPU -gt 60 | Sort-Object CPU -Descending</code>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p><span>CMD-LIBRARY</span> // Built for learning, troubleshooting, and everyday automation.</p>
+      <p>Permission is a boundary, not a puzzle to defeat.</p>
+    </footer>
+  </div>
+</body>
+
+</html>
