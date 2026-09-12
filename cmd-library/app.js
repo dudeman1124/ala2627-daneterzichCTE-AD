@@ -30,12 +30,14 @@ const matrixContext = matrixCanvas.getContext('2d');
 const glitchCanvas = document.querySelector('#glitch-background');
 const glitchContext = glitchCanvas.getContext('2d');
 const rickStream = document.querySelector('#rick-stream');
+const futureCity = document.querySelector('#future-city');
 let activeFilter = 'all';
 let matrixAnimation;
 let glitchAnimation;
 let rickAnimation;
 let rickFrames = [];
 let rickFrameIndex = 0;
+let cityScrollFrame;
 
 async function loadRickStream() {
   try {
@@ -60,6 +62,15 @@ function setRickState(isActive) {
     rickAnimation = undefined;
   }
 }
+
+function updateFutureCity() {
+  cityScrollFrame = undefined;
+  futureCity.style.setProperty('--city-scroll', `${window.scrollY * .22}px`);
+}
+
+window.addEventListener('scroll', () => {
+  if (!cityScrollFrame) cityScrollFrame = requestAnimationFrame(updateFutureCity);
+}, { passive: true });
 
 function resizeMatrix() {
   const ratio = window.devicePixelRatio || 1;

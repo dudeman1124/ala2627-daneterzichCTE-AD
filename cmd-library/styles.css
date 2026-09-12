@@ -154,6 +154,24 @@ body::before {
   transition: opacity 300ms ease;
 }
 
+.future-city {
+  position: fixed;
+  inset: -12vh 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(11, 5, 30, .5), rgba(30, 8, 50, .66)),
+    url('assets/future-city.png') center / cover no-repeat;
+  opacity: 0;
+  transform: translateY(calc(var(--city-scroll, 0px) - 8vh));
+  transition: opacity 350ms ease;
+  will-change: transform;
+}
+
+:root[data-theme='futurepunk'] .future-city {
+  opacity: .27;
+}
+
 :root[data-theme='greyscale'] .glitch-background {
   opacity: .9;
 }
