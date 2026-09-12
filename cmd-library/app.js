@@ -24,7 +24,18 @@ const search = document.querySelector('#command-search');
 const filters = document.querySelector('#filters');
 const emptyState = document.querySelector('#empty-state');
 const resultCount = document.querySelector('#result-count');
+const themeOptions = document.querySelector('#theme-options');
 let activeFilter = 'all';
+
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeOptions.querySelectorAll('[data-theme]').forEach((button) => {
+    const isActive = button.dataset.theme === theme;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-pressed', String(isActive));
+  });
+  localStorage.setItem('cmd-library-theme', theme);
+}
 
 function render() {
   const query = search.value.trim().toLowerCase();
@@ -73,4 +84,10 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
+themeOptions.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-theme]');
+  if (button) setTheme(button.dataset.theme);
+});
+
 render();
+setTheme(localStorage.getItem('cmd-library-theme') || 'default');
