@@ -57,7 +57,7 @@
   --orange: #ff56c9;
   --danger: #ff765e;
   --grid-line: rgba(234, 255, 85, .04);
-  --glow: rgba(255, 86, 201, .14);
+  --glow: rgba(255, 86, 201, .2);
   --command-bg: #160b20;
   --font-body: 'Space Grotesk', sans-serif;
   --font-mono: 'DM Mono', monospace;
@@ -657,6 +657,73 @@ h2 {
 :root[data-theme='futurepunk'] .command-card:nth-child(even) .tag {
   color: #ff56c9;
   border-color: #ff56c9;
+}
+
+:root[data-theme='futurepunk'] body {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(84, 244, 255, .12), transparent 25rem),
+    radial-gradient(circle at 88% 38%, rgba(255, 86, 201, .16), transparent 28rem),
+    radial-gradient(circle at 42% 92%, rgba(234, 255, 85, .1), transparent 24rem),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px), var(--bg);
+  background-size: auto, auto, auto, 4rem 4rem, 4rem 4rem, auto;
+}
+
+:root[data-theme='futurepunk'] h1,
+:root[data-theme='futurepunk'] h2,
+:root[data-theme='futurepunk'] h3,
+:root[data-theme='futurepunk'] .section-label,
+:root[data-theme='futurepunk'] .kicker {
+  text-shadow: 0 0 1.2rem rgba(84, 244, 255, .3), 0 0 .35rem currentColor;
+}
+
+:root[data-theme='futurepunk'] .panel,
+:root[data-theme='futurepunk'] .control-deck,
+:root[data-theme='futurepunk'] .theme-bar,
+:root[data-theme='futurepunk'] .workflow-band {
+  border-color: rgba(84, 244, 255, .4);
+  box-shadow: 0 0 2rem rgba(255, 86, 201, .08);
+}
+
+:root[data-theme='futurepunk'] .command-card {
+  background: linear-gradient(145deg, rgba(50, 19, 74, .9), rgba(22, 11, 32, .94));
+  box-shadow: inset 0 0 2rem rgba(84, 244, 255, .05), 0 0 1.5rem rgba(255, 86, 201, .08);
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(4n + 1) {
+  box-shadow: inset 0 0 2rem rgba(255, 86, 201, .06), 0 0 1.5rem rgba(255, 86, 201, .15);
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(4n + 2) {
+  box-shadow: inset 0 0 2rem rgba(84, 244, 255, .06), 0 0 1.5rem rgba(84, 244, 255, .15);
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(4n + 3) {
+  box-shadow: inset 0 0 2rem rgba(234, 255, 85, .05), 0 0 1.5rem rgba(234, 255, 85, .12);
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(4n) {
+  box-shadow: inset 0 0 2rem rgba(255, 118, 94, .06), 0 0 1.5rem rgba(255, 118, 94, .14);
+}
+
+:root[data-theme='futurepunk'] input,
+:root[data-theme='futurepunk'] .theme-button,
+:root[data-theme='futurepunk'] .filter-button,
+:root[data-theme='futurepunk'] .copy-button,
+:root[data-theme='futurepunk'] .command-line,
+:root[data-theme='futurepunk'] .workflow-copy code {
+  border-color: rgba(84, 244, 255, .5);
+  box-shadow: 0 0 .9rem rgba(84, 244, 255, .08);
+}
+
+:root[data-theme='futurepunk'] .theme-button:hover,
+:root[data-theme='futurepunk'] .theme-button.is-active,
+:root[data-theme='futurepunk'] .filter-button:hover,
+:root[data-theme='futurepunk'] .filter-button.is-active {
+  border-color: #eaff55;
+  background: rgba(234, 255, 85, .12);
+  box-shadow: 0 0 1.2rem rgba(234, 255, 85, .18);
+  text-shadow: 0 0 .7rem currentColor;
 }
 
 .command-card {
