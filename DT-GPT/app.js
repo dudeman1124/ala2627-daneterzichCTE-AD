@@ -14,6 +14,7 @@ const clock = document.querySelector('#clock');
 const scopeContext = scope.getContext('2d');
 const imageContext = { files: [], previews: [], ocrText: '' };
 let speaking = false;
+let speechPaused = false;
 let speechStartedAt = 0;
 let animationFrame;
 
@@ -121,8 +122,29 @@ function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = .96;
   utterance.pitch = .9;
-  utterance.onstart = () => { speaking = true; speechStartedAt = performance.now(); scopeStatus.textContent = 'SPEAKING'; voiceCaption.textContent = 'Response in progress'; };
-  utterance.onend = () => { speaking = false; scopeStatus.textContent = 'STANDBY'; voiceCaption.textContent = 'Waiting for a question'; };
+  utterance.onstart = () => {
+    speaking = true;
+    speechPaused = false;
+    speechStartedAt = performance.now();
+    scopeStatus.textContent = 'LOW VOICE / LIVE';
+    voiceCaption.textContent = 'Response in progress';
+  };
+  utterance.onpause = () => {
+    speechPaused = true;
+    scopeStatus.textContent = 'VOICE / PAUSED';
+    voiceCaption.textContent = 'Speech paused';
+  };
+  utterance.onresume = () => {
+    speechPaused = false;
+    scopeStatus.textContent = 'LOW VOICE / LIVE';
+    voiceCaption.textContent = 'Response in progress';
+  };
+  utterance.onend = () => {
+    speaking = false;
+    speechPaused = false;
+    scopeStatus.textContent = 'LOW VOICE / STANDBY';
+    voiceCaption.textContent = 'Waiting for a question';
+  };
   utterance.onerror = utterance.onend;
   speechSynthesis.speak(utterance);
 }
@@ -134,13 +156,16 @@ function drawScope(time = 0) {
   scopeContext.clearRect(0, 0, width, height);
   scopeContext.beginPath();
   scopeContext.lineWidth = 2 * window.devicePixelRatio;
-  scopeContext.strokeStyle = speaking ? '#7ee5d0' : 'rgba(126, 229, 208, .25)';
-  const phase = speaking ? (time - speechStartedAt) / 170 : time / 900;
+  scopeContext.strokeStyle = speaking && !speechPaused ? '#7ee5d0' : 'rgba(126, 229, 208, .25)';
+  const phase = speaking ? (time - speechStartedAt) / 700 : time / 1400;
   for (let x = 0; x <= width; x += 3) {
     const normalized = x / width;
-    const envelope = speaking ? .12 + Math.sin(normalized * Math.PI) * .88 : .08;
-    const noise = Math.sin(normalized * 38 + phase * 4) * .22 + Math.sin(normalized * 92 - phase * 7) * .1;
-    const y = height / 2 + (speaking ? Math.sin(normalized * 22 + phase * 2) * envelope * height * .25 + noise * height * envelope : Math.sin(normalized * 12 + phase) * height * .04);
+    const active = speaking && !speechPaused;
+    const envelope = active ? .18 + Math.sin(normalized * Math.PI) * .82 : .08;
+    const lowVoice = Math.sin(normalized * 7 + phase * 2.4) * .62;
+    const harmonic = Math.sin(normalized * 15 - phase * 1.2) * .2;
+    const breath = Math.sin(normalized * 32 + phase * 1.5) * .08;
+    const y = height / 2 + (active ? (lowVoice + harmonic + breath) * envelope * height * .24 : Math.sin(normalized * 7 + phase) * height * .04);
     if (x === 0) scopeContext.moveTo(x, y); else scopeContext.lineTo(x, y);
   }
   scopeContext.stroke();
