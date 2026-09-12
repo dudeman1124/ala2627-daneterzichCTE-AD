@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090d12">
+  <meta name="description"
+    content="DT-GPT is an image-aware browser assistant with optional web lookup, voice, and oscilloscope feedback.">
+  <title>DT-GPT // Visual Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="../"><span class="brand-mark">DT</span><span>DT-GPT</span></a>
+      <div class="top-status"><span class="status-dot"></span><span>LOCAL SESSION</span><span
+          class="status-divider"></span><span id="clock">00:00:00</span></div>
+    </header>
+
+    <main>
+      <section class="intro">
+        <p class="kicker">VISUAL INTELLIGENCE / 01</p>
+        <h1>Ask it. Show it.<br><em>Hear it think.</em></h1>
+        <p class="intro-copy">A focused assistant for text and images that responds in conversation, reaches for live
+          web context when you ask, and turns every spoken answer into a live signal.</p>
+      </section>
+
+      <section class="workspace" aria-label="DT-GPT workspace">
+        <aside class="media-panel panel">
+          <div class="panel-heading">
+            <div><span class="section-number">01</span>
+              <h2>Visual input</h2>
+            </div>
+            <span class="panel-tag">OPTIONAL / LOCAL</span>
+          </div>
+
+          <label class="drop-zone" id="drop-zone" for="image-input">
+            <input id="image-input" type="file" accept="image/*" multiple>
+            <span class="drop-icon" aria-hidden="true">+</span>
+            <strong>Drop images here <span class="optional-label">optional</span></strong>
+            <span>or click to browse</span>
+            <small>JPG, PNG, WEBP / up to 10 MB</small>
+          </label>
+
+          <div class="image-stack" id="image-stack" aria-live="polite">
+            <div class="empty-state">No images loaded.<br><span>Your visual context will appear here.</span></div>
+          </div>
+          <button class="secondary-button" id="scan-button" type="button" disabled><span>◎</span> Scan visible
+            text</button>
+          <p class="privacy-note">Images stay in this browser. Scanning uses on-device OCR.</p>
+        </aside>
+
+        <section class="chat-panel panel">
+          <div class="panel-heading">
+            <div><span class="section-number">02</span>
+              <h2>Conversation</h2>
+            </div>
+            <span class="panel-tag panel-tag--active"><span class="status-dot"></span> READY</span>
+          </div>
+
+          <div class="conversation" id="conversation" aria-live="polite">
+            <article class="message message--assistant">
+              <div class="avatar">DT</div>
+              <div class="message-body"><span class="message-label">DT-GPT / NOW</span>
+                <p>Hey. Bring me an image or ask me anything. I can describe what you upload and read visible text when
+                  you run a scan.</p>
+              </div>
+            </article>
+          </div>
+
+          <form class="composer" id="chat-form">
+            <label for="prompt" class="sr-only">Ask DT-GPT a question</label>
+            <textarea id="prompt" rows="1" placeholder="Ask a question with or without an image..." required></textarea>
+            <button class="send-button" type="submit" aria-label="Send message">↗</button>
+          </form>
+          <label class="web-toggle" for="web-toggle">
+            <input id="web-toggle" type="checkbox">
+            <span class="toggle-track" aria-hidden="true"></span>
+            <span><strong>Use web lookup</strong><small>Search live Wikipedia context for this question</small></span>
+          </label>
+          <div class="suggestions" aria-label="Suggested prompts">
+            <button type="button" data-prompt="Describe the image I uploaded.">Describe image</button>
+            <button type="button" data-prompt="What text can you read?">Read text</button>
+            <button type="button" data-prompt="What is happening in the world today?" data-web="true">Web
+              search</button>
+            <button type="button" data-prompt="Give me a quick creative idea.">Creative idea</button>
+          </div>
+        </section>
+
+        <section class="scope-panel panel">
+          <div class="panel-heading">
+            <div><span class="section-number">03</span>
+              <h2>Voice scope</h2>
+            </div>
+            <span class="panel-tag" id="scope-status">STANDBY</span>
+          </div>
+          <div class="scope-wrap">
+            <canvas id="scope" width="900" height="220"
+              aria-label="Animated oscilloscope showing voice activity"></canvas>
+            <div class="scope-grid" aria-hidden="true"></div>
+            <span class="scope-axis scope-axis--top">+1.0</span>
+            <span class="scope-axis scope-axis--bottom">-1.0</span>
+            <span class="scope-axis scope-axis--right">VOICE / LIVE</span>
+          </div>
+          <div class="scope-footer"><span><i class="pulse-dot"></i> SYNTHESIZED RESPONSE</span><span
+              id="voice-caption">Waiting for a question</span></div>
+        </section>
+      </section>
+    </main>
+
+    <footer><span>DT-GPT / BROWSER INTELLIGENCE</span><span>NO SESSION MEMORY / WEB BY REQUEST</span></footer>
+  </div>
+</body>
+
+</html>
