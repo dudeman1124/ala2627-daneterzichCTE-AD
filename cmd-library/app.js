@@ -65,7 +65,7 @@ function setRickState(isActive) {
 
 function updateFutureCity() {
   cityScrollFrame = undefined;
-  futureCity.style.setProperty('--city-scroll', `${window.scrollY * .22}px`);
+  futureCity.style.setProperty('--city-scroll', `${window.scrollY * -.22}px`);
 }
 
 window.addEventListener('scroll', () => {
