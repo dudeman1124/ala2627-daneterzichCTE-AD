@@ -14,15 +14,15 @@
   --panel: #0d1a16;
   --panel-bright: #12231d;
   --line: #294337;
-  --acid: #c8ff59;
+  --acid: #00ff00;
   --aqua: #70e6c0;
   --orange: #ffad68;
   --danger: #ff826e;
-  --grid-line: rgba(200, 255, 89, .025);
+  --grid-line: rgba(0, 255, 0, .025);
   --glow: rgba(112, 230, 192, .09);
   --command-bg: #08120f;
-  --font-body: 'Space Grotesk', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-body: 'Terminal', monospace;
+  --font-mono: 'Terminal', monospace;
 }
 
 :root[data-theme='greyscale'] {
@@ -141,6 +141,29 @@ body::before {
   pointer-events: none;
   opacity: 0;
   transition: opacity 300ms ease;
+}
+
+.rick-stream {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--acid);
+  font: clamp(.28rem, .7vw, .65rem)/.9 'Terminal', monospace;
+  opacity: 0;
+  text-align: center;
+  white-space: pre;
+  mix-blend-mode: screen;
+  transform: scale(1.03);
+  transition: opacity 300ms ease;
+}
+
+:root[data-theme='default'] .rick-stream {
+  opacity: .14;
 }
 
 :root[data-theme='matrix'] .matrix-rain {
@@ -515,7 +538,7 @@ h2 {
 :root[data-theme='default'] .command-card h3,
 :root[data-theme='default'] .command-line,
 :root[data-theme='default'] .copy-button {
-  font-family: 'Fira Code', monospace;
+  font-family: 'Terminal', monospace;
 }
 
 :root[data-theme='default'] .command-line {

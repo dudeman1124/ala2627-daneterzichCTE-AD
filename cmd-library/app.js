@@ -27,8 +27,36 @@ const resultCount = document.querySelector('#result-count');
 const themeOptions = document.querySelector('#theme-options');
 const matrixCanvas = document.querySelector('#matrix-rain');
 const matrixContext = matrixCanvas.getContext('2d');
+const rickStream = document.querySelector('#rick-stream');
 let activeFilter = 'all';
 let matrixAnimation;
+let rickAnimation;
+let rickFrames = [];
+let rickFrameIndex = 0;
+
+async function loadRickStream() {
+  try {
+    const response = await fetch('assets/rick-ascii-stream.txt');
+    const stream = await response.text();
+    rickFrames = stream.split('\x1b[2J\x1b[H').map((frame) => frame.trim()).filter(Boolean);
+    if (rickFrames.length) rickStream.textContent = rickFrames[0];
+  } catch {
+    rickStream.textContent = 'curl ascii.live/rick';
+  }
+}
+
+function setRickState(isActive) {
+  if (isActive && !rickAnimation && rickFrames.length) {
+    rickAnimation = window.setInterval(() => {
+      rickFrameIndex = (rickFrameIndex + 1) % rickFrames.length;
+      rickStream.textContent = rickFrames[rickFrameIndex];
+    }, 90);
+  }
+  if (!isActive && rickAnimation) {
+    clearInterval(rickAnimation);
+    rickAnimation = undefined;
+  }
+}
 
 function resizeMatrix() {
   const ratio = window.devicePixelRatio || 1;
@@ -77,6 +105,7 @@ function setTheme(theme) {
   });
   localStorage.setItem('cmd-library-theme', theme);
   setMatrixState(theme === 'matrix');
+  setRickState(theme === 'default');
 }
 
 function render() {
@@ -133,5 +162,6 @@ themeOptions.addEventListener('click', (event) => {
 
 render();
 setTheme(localStorage.getItem('cmd-library-theme') || 'default');
+loadRickStream().then(() => setRickState(document.documentElement.dataset.theme === 'default'));
 resizeMatrix();
 window.addEventListener('resize', resizeMatrix);
