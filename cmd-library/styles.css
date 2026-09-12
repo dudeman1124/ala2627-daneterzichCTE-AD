@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fira+Code:wght@400;500;600;700&family=Share+Tech+Mono&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'VCR OSD Mono';
+  src: url('assets/VCR_OSD_MONO_1.001.ttf') format('truetype');
+  font-display: swap;
+}
 
 :root {
   --ink: #e9f4e9;
@@ -15,7 +21,8 @@
   --grid-line: rgba(200, 255, 89, .025);
   --glow: rgba(112, 230, 192, .09);
   --command-bg: #08120f;
-  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-mono: 'DM Mono', monospace;
 }
 
 :root[data-theme='greyscale'] {
@@ -33,6 +40,8 @@
   --grid-line: rgba(255, 255, 255, .045);
   --glow: rgba(255, 255, 255, .08);
   --command-bg: #0d0d0d;
+  --font-body: 'VCR OSD Mono', monospace;
+  --font-mono: 'VCR OSD Mono', monospace;
 }
 
 :root[data-theme='futurepunk'] {
@@ -50,6 +59,8 @@
   --grid-line: rgba(234, 255, 85, .04);
   --glow: rgba(255, 86, 201, .14);
   --command-bg: #160b20;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-mono: 'DM Mono', monospace;
 }
 
 :root[data-theme='matrix'] {
@@ -67,6 +78,8 @@
   --grid-line: rgba(85, 255, 112, .035);
   --glow: rgba(85, 255, 112, .14);
   --command-bg: #020d05;
+  --font-body: 'Fira Code', monospace;
+  --font-mono: 'Fira Code', monospace;
 }
 
 :root[data-theme='halflife'] {
@@ -84,6 +97,8 @@
   --grid-line: rgba(230, 166, 45, .025);
   --glow: rgba(216, 117, 45, .1);
   --command-bg: #171a18;
+  --font-body: 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
 }
 
 * {
@@ -104,7 +119,7 @@ body {
     var(--bg);
   background-size: 4rem 4rem, 4rem 4rem, auto, auto;
   color: var(--ink);
-  font: 16px/1.55 'Space Grotesk', sans-serif;
+  font: 16px/1.55 var(--font-body);
 }
 
 body::before {
@@ -115,6 +130,26 @@ body::before {
   background: linear-gradient(90deg, transparent 0 49.9%, var(--grid-line) 50%, transparent 50.1%);
   background-size: 8rem 100%;
   content: '';
+}
+
+.matrix-rain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+:root[data-theme='matrix'] .matrix-rain {
+  opacity: .7;
+}
+
+.site-shell {
+  position: relative;
+  z-index: 1;
 }
 
 :root[data-theme='greyscale'] body::after {
@@ -158,8 +193,27 @@ input {
 }
 
 .masthead {
+  position: relative;
   padding: 1.25rem 0 4.5rem;
   border-bottom: 1px solid var(--line);
+}
+
+.halflife-logo {
+  position: absolute;
+  top: 1rem;
+  right: 0;
+  width: clamp(7rem, 16vw, 12rem);
+  height: auto;
+  opacity: 0;
+  filter: sepia(1) saturate(2) hue-rotate(345deg) drop-shadow(0 0 .6rem rgba(216, 117, 45, .32));
+  pointer-events: none;
+  transform: translateY(-.25rem);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+:root[data-theme='halflife'] .halflife-logo {
+  opacity: .92;
+  transform: none;
 }
 
 .back-link,
@@ -171,7 +225,7 @@ input {
 footer,
 .sort-note,
 .tag {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .back-link {
@@ -252,7 +306,7 @@ h1 em {
 
 .boundary strong {
   color: var(--orange);
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: .7rem;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -390,7 +444,7 @@ input:focus {
 .filter-button span {
   margin-left: .4rem;
   color: var(--faint);
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: .68rem;
 }
 
@@ -452,6 +506,121 @@ h2 {
   background: var(--line);
 }
 
+:root[data-theme='default'] .command-card {
+  border: 1px solid #1b5b42;
+  background: #07130f;
+  box-shadow: inset 0 1px 0 rgba(112, 230, 192, .08);
+}
+
+:root[data-theme='default'] .command-card h3,
+:root[data-theme='default'] .command-line,
+:root[data-theme='default'] .copy-button {
+  font-family: 'Fira Code', monospace;
+}
+
+:root[data-theme='default'] .command-line {
+  border: 1px solid #245d46;
+  border-left: 3px solid var(--aqua);
+  background: #020805;
+  box-shadow: inset 0 0 1.5rem rgba(112, 230, 192, .06);
+}
+
+:root[data-theme='greyscale'] .command-card {
+  position: relative;
+  overflow: visible;
+}
+
+:root[data-theme='greyscale'] .command-card::before,
+:root[data-theme='greyscale'] .command-card::after {
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  content: '';
+}
+
+:root[data-theme='greyscale'] .command-card::before {
+  border: 1px solid rgba(255, 255, 255, .75);
+  clip-path: polygon(0 0, 38% 0, 38% 2px, 72% 2px, 72% 0, 100% 0, 100% 43%, 98% 43%, 98% 76%, 100% 76%, 100% 100%, 63% 100%, 63% 98%, 20% 98%, 20% 100%, 0 100%, 0 62%, 2px 62%, 2px 23%, 0 23%);
+  animation: glitch-rim 2.8s steps(2, end) infinite;
+}
+
+:root[data-theme='greyscale'] .command-card::after {
+  border: 1px solid rgba(255, 255, 255, .22);
+  clip-path: polygon(0 13%, 4px 13%, 4px 0, 47% 0, 47% 3px, 100% 3px, 100% 37%, calc(100% - 3px) 37%, calc(100% - 3px) 100%, 57% 100%, 57% calc(100% - 3px), 0 calc(100% - 3px));
+  animation: glitch-rim-shift 1.9s steps(2, end) infinite reverse;
+}
+
+@keyframes glitch-rim {
+
+  0%,
+  76%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  78% {
+    transform: translate(1px, -1px);
+  }
+
+  80% {
+    transform: translate(-1px, 1px);
+  }
+
+  82% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes glitch-rim-shift {
+
+  0%,
+  68%,
+  100% {
+    transform: translate(0, 0);
+    opacity: .45;
+  }
+
+  70% {
+    transform: translate(-1px, 1px);
+    opacity: .8;
+  }
+
+  73% {
+    transform: translate(1px, 0);
+    opacity: .25;
+  }
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(4n + 1) {
+  border-top: 2px solid #ff56c9;
+  box-shadow: 0 0 1.5rem rgba(255, 86, 201, .12);
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(4n + 2) {
+  border-top: 2px solid #54f4ff;
+  box-shadow: 0 0 1.5rem rgba(84, 244, 255, .12);
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(4n + 3) {
+  border-top: 2px solid #eaff55;
+  box-shadow: 0 0 1.5rem rgba(234, 255, 85, .1);
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(4n) {
+  border-top: 2px solid #ff765e;
+  box-shadow: 0 0 1.5rem rgba(255, 118, 94, .12);
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(odd) .tag {
+  color: #54f4ff;
+  border-color: #54f4ff;
+}
+
+:root[data-theme='futurepunk'] .command-card:nth-child(even) .tag {
+  color: #ff56c9;
+  border-color: #ff56c9;
+}
+
 .command-card {
   min-height: 15rem;
   padding: 1.25rem;
@@ -491,7 +660,7 @@ h2 {
 .command-card h3 {
   margin: 0 0 .45rem;
   color: var(--acid);
-  font: 500 1.03rem 'DM Mono', monospace;
+  font: 500 1.03rem var(--font-mono);
 }
 
 .command-card p {
@@ -511,7 +680,7 @@ h2 {
   border-left: 2px solid var(--orange);
   background: var(--command-bg);
   color: var(--ink);
-  font: .73rem/1.4 'DM Mono', monospace;
+  font: .73rem/1.4 var(--font-mono);
   overflow-wrap: anywhere;
 }
 
@@ -523,7 +692,7 @@ h2 {
   background: transparent;
   color: var(--orange);
   cursor: pointer;
-  font: .62rem 'DM Mono', monospace;
+  font: .62rem var(--font-mono);
 }
 
 .copy-button:hover,
@@ -559,7 +728,7 @@ h2 {
   padding: 1rem;
   border: 1px solid var(--line);
   color: var(--acid);
-  font: .75rem/1.5 'DM Mono', monospace;
+  font: .75rem/1.5 var(--font-mono);
   overflow-wrap: anywhere;
 }
 

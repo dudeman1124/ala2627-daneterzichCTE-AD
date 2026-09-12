@@ -25,7 +25,48 @@ const filters = document.querySelector('#filters');
 const emptyState = document.querySelector('#empty-state');
 const resultCount = document.querySelector('#result-count');
 const themeOptions = document.querySelector('#theme-options');
+const matrixCanvas = document.querySelector('#matrix-rain');
+const matrixContext = matrixCanvas.getContext('2d');
 let activeFilter = 'all';
+let matrixAnimation;
+
+function resizeMatrix() {
+  const ratio = window.devicePixelRatio || 1;
+  matrixCanvas.width = window.innerWidth * ratio;
+  matrixCanvas.height = window.innerHeight * ratio;
+  matrixContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+
+function drawMatrix() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  matrixContext.fillStyle = 'rgba(2, 11, 5, .11)';
+  matrixContext.fillRect(0, 0, width, height);
+  matrixContext.font = '13px Fira Code, monospace';
+  matrixColumns.forEach((column, index) => {
+    const character = Math.random() > .5 ? '1' : '0';
+    matrixContext.fillStyle = index % 7 === 0 ? '#d8ffd8' : '#55ff70';
+    matrixContext.fillText(character, index * matrixColumnWidth, column.y);
+    column.y += column.speed;
+    if (column.y > height + 20) column.y = -Math.random() * height;
+  });
+  matrixAnimation = requestAnimationFrame(drawMatrix);
+}
+
+const matrixColumnWidth = 20;
+const matrixColumns = Array.from({ length: Math.ceil(window.innerWidth / matrixColumnWidth) }, () => ({
+  y: -Math.random() * window.innerHeight,
+  speed: 1.5 + Math.random() * 3
+}));
+
+function setMatrixState(isActive) {
+  if (isActive && !matrixAnimation) drawMatrix();
+  if (!isActive && matrixAnimation) {
+    cancelAnimationFrame(matrixAnimation);
+    matrixAnimation = undefined;
+    matrixContext.clearRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+  }
+}
 
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
@@ -35,6 +76,7 @@ function setTheme(theme) {
     button.setAttribute('aria-pressed', String(isActive));
   });
   localStorage.setItem('cmd-library-theme', theme);
+  setMatrixState(theme === 'matrix');
 }
 
 function render() {
@@ -91,3 +133,5 @@ themeOptions.addEventListener('click', (event) => {
 
 render();
 setTheme(localStorage.getItem('cmd-library-theme') || 'default');
+resizeMatrix();
+window.addEventListener('resize', resizeMatrix);
