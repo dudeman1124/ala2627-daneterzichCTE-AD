@@ -27,9 +27,12 @@ const resultCount = document.querySelector('#result-count');
 const themeOptions = document.querySelector('#theme-options');
 const matrixCanvas = document.querySelector('#matrix-rain');
 const matrixContext = matrixCanvas.getContext('2d');
+const glitchCanvas = document.querySelector('#glitch-background');
+const glitchContext = glitchCanvas.getContext('2d');
 const rickStream = document.querySelector('#rick-stream');
 let activeFilter = 'all';
 let matrixAnimation;
+let glitchAnimation;
 let rickAnimation;
 let rickFrames = [];
 let rickFrameIndex = 0;
@@ -96,6 +99,74 @@ function setMatrixState(isActive) {
   }
 }
 
+function resizeGlitch() {
+  const ratio = window.devicePixelRatio || 1;
+  glitchCanvas.width = window.innerWidth * ratio;
+  glitchCanvas.height = window.innerHeight * ratio;
+  glitchContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+
+function drawGlitch(time = 0) {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const phase = time / 1000;
+  glitchContext.clearRect(0, 0, width, height);
+
+  for (let index = 0; index < 900; index += 1) {
+    const shade = 80 + Math.floor(Math.random() * 150);
+    glitchContext.fillStyle = `rgba(${shade}, ${shade}, ${shade}, ${Math.random() * .18})`;
+    const x = Math.random() * width;
+    const y = Math.random() * height;
+    const size = Math.random() > .92 ? 3 : 1;
+    glitchContext.fillRect(x, y, size + Math.random() * 4, size);
+  }
+
+  glitchContext.fillStyle = 'rgba(255, 255, 255, .045)';
+  for (let y = (phase * 38) % 8; y < height; y += 8) glitchContext.fillRect(0, y, width, 1);
+
+  const scale = Math.min(width, height) / 650;
+  const figureX = width * .72 + Math.sin(phase * 2.1) * 5;
+  const figureY = height * .51;
+  const jitter = () => (Math.random() - .5) * 7;
+  glitchContext.lineWidth = Math.max(1, scale * 1.3);
+  glitchContext.strokeStyle = 'rgba(235, 235, 235, .23)';
+  glitchContext.shadowColor = 'rgba(255, 255, 255, .2)';
+  glitchContext.shadowBlur = 7;
+
+  const line = (points) => {
+    glitchContext.beginPath();
+    points.forEach(([x, y], index) => {
+      const shiftedX = figureX + x * scale + jitter();
+      const shiftedY = figureY + y * scale + jitter();
+      if (Math.random() < .13) return;
+      if (index === 0) glitchContext.moveTo(shiftedX, shiftedY);
+      else glitchContext.lineTo(shiftedX, shiftedY);
+    });
+    glitchContext.stroke();
+  };
+
+  glitchContext.beginPath();
+  glitchContext.arc(figureX + jitter(), figureY - 160 * scale + jitter(), 35 * scale, 0, Math.PI * 2);
+  glitchContext.stroke();
+  line([[-35, -120], [-72, -92], [-87, 0], [-68, 105]]);
+  line([[35, -120], [72, -92], [87, 0], [68, 105]]);
+  line([[-35, -120], [-15, -135], [15, -135], [35, -120], [44, 50], [31, 155]]);
+  line([[-35, -120], [-44, 50], [-31, 155]]);
+  line([[-35, -120], [-105, -45], [-135, 40]]);
+  line([[35, -120], [105, -45], [135, 40]]);
+  glitchContext.shadowBlur = 0;
+  glitchAnimation = requestAnimationFrame(drawGlitch);
+}
+
+function setGlitchState(isActive) {
+  if (isActive && !glitchAnimation) drawGlitch();
+  if (!isActive && glitchAnimation) {
+    cancelAnimationFrame(glitchAnimation);
+    glitchAnimation = undefined;
+    glitchContext.clearRect(0, 0, glitchCanvas.width, glitchCanvas.height);
+  }
+}
+
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
   themeOptions.querySelectorAll('[data-theme]').forEach((button) => {
@@ -105,6 +176,7 @@ function setTheme(theme) {
   });
   localStorage.setItem('cmd-library-theme', theme);
   setMatrixState(theme === 'matrix');
+  setGlitchState(theme === 'greyscale');
   setRickState(theme === 'default');
 }
 
@@ -164,4 +236,8 @@ render();
 setTheme(localStorage.getItem('cmd-library-theme') || 'default');
 loadRickStream().then(() => setRickState(document.documentElement.dataset.theme === 'default'));
 resizeMatrix();
-window.addEventListener('resize', resizeMatrix);
+resizeGlitch();
+window.addEventListener('resize', () => {
+  resizeMatrix();
+  resizeGlitch();
+});
