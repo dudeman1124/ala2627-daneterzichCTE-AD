@@ -6,8 +6,9 @@ const statusLed = document.querySelector('#status-led');
 const modeValue = document.querySelector('#mode-value');
 const nextValue = document.querySelector('#next-value');
 const beepCount = document.querySelector('#beep-count');
+const alarmSound = new Audio('https://www.myinstants.com/media/sounds/smoke-detector-beep.mp3');
+alarmSound.preload = 'auto';
 
-let audioContext;
 let intervalId;
 let countdownId;
 let nextBeepAt;
@@ -39,21 +40,8 @@ function setStatus(text, active = false) {
 }
 
 function playBeep() {
-  audioContext ??= new AudioContext();
-  if (audioContext.state === 'suspended') audioContext.resume();
-
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-  const now = audioContext.currentTime;
-  oscillator.type = 'square';
-  oscillator.frequency.setValueAtTime(3000, now);
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.22, now + 0.008);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-  oscillator.connect(gain).connect(audioContext.destination);
-  oscillator.start(now);
-  oscillator.stop(now + 0.17);
-
+  alarmSound.currentTime = 0;
+  alarmSound.play().catch(() => undefined);
   sessionBeeps += 1;
   beepCount.textContent = sessionBeeps;
 }
