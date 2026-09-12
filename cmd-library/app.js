@@ -86,19 +86,24 @@ function drawMatrix() {
   matrixContext.fillRect(0, 0, width, height);
   matrixContext.font = '13px Fira Code, monospace';
   matrixColumns.forEach((column, index) => {
-    const character = Math.random() > .5 ? '1' : '0';
-    matrixContext.fillStyle = index % 7 === 0 ? '#d8ffd8' : '#55ff70';
-    matrixContext.fillText(character, index * matrixColumnWidth, column.y);
-    column.y += column.speed;
-    if (column.y > height + 20) column.y = -Math.random() * height;
+    column.drops.forEach((drop, dropIndex) => {
+      const character = Math.random() > .5 ? '1' : '0';
+      matrixContext.fillStyle = (index + dropIndex) % 11 === 0 ? '#d8ffd8' : '#55ff70';
+      matrixContext.fillText(character, index * matrixColumnWidth, drop.y);
+      drop.y += drop.speed;
+      if (drop.y > height + 20) drop.y = -Math.random() * height;
+    });
   });
   matrixAnimation = requestAnimationFrame(drawMatrix);
 }
 
 const matrixColumnWidth = 20;
+const matrixDropsPerLane = 10;
 const matrixColumns = Array.from({ length: Math.ceil(window.innerWidth / matrixColumnWidth) }, () => ({
-  y: -Math.random() * window.innerHeight,
-  speed: 1.5 + Math.random() * 3
+  drops: Array.from({ length: matrixDropsPerLane }, () => ({
+    y: -Math.random() * window.innerHeight,
+    speed: 1.5 + Math.random() * 3
+  }))
 }));
 
 function setMatrixState(isActive) {
