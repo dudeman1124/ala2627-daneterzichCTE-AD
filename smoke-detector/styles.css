@@ -12,6 +12,7 @@
   --yellow: #f6d35d;
   --red: #ff665f;
   --orange: #ff9d62;
+  --radius: 2px;
 }
 
 * {
@@ -135,8 +136,9 @@ h1 span {
   gap: 1rem;
   align-items: center;
   margin: 2rem 0;
-  padding: 1rem 1.25rem;
+  padding: 1.15rem 1.25rem;
   border: 1px solid rgba(255, 157, 98, .4);
+  border-left: 4px solid var(--orange);
   background: rgba(255, 157, 98, .07);
   color: var(--muted);
 }
@@ -184,6 +186,8 @@ h2 {
 .status-readout {
   padding: .6rem .75rem;
   border: 1px solid var(--line);
+  border-top: 2px solid var(--teal);
+  background: var(--panel);
   color: var(--muted);
   font: .68rem 'DM Mono', monospace;
   letter-spacing: .06em;
@@ -204,56 +208,44 @@ h2 {
   aspect-ratio: 1;
   width: min(100%, 26rem);
   margin: auto;
+  padding: 1.4rem;
   border: 1px solid var(--line);
-  border-radius: 50%;
-  background: radial-gradient(circle, #273238 0 26%, #151d21 27% 53%, #0d1215 54%);
-  box-shadow: inset 0 0 3rem rgba(118, 229, 206, .08), 0 0 0 1rem rgba(118, 229, 206, .025);
+  border-top: 3px solid var(--yellow);
+  background: linear-gradient(145deg, #1b2529, #0d1215);
+  box-shadow: 1rem 1rem 0 rgba(118, 229, 206, .08);
 }
 
-.alarm-ring {
-  position: absolute;
-  border: 1px solid rgba(118, 229, 206, .45);
-  border-radius: 50%;
-}
-
-.alarm-ring--outer {
-  inset: 7%;
-}
-
-.alarm-ring--inner {
-  inset: 18%;
-  border-color: rgba(255, 102, 95, .5);
-}
-
-.alarm-core {
+.image-frame {
   display: grid;
   place-items: center;
-  width: 30%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--red);
-  box-shadow: 0 0 2rem rgba(255, 102, 95, .45);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #f1f0ee;
 }
 
-.alarm-core span {
-  width: 28%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #4a1719;
+.image-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .alarm-visual p {
   position: absolute;
-  bottom: 13%;
+  right: 1.5rem;
+  bottom: 1rem;
   margin: 0;
-  color: var(--muted);
+  padding: .35rem .5rem;
+  background: rgba(9, 11, 13, .82);
+  color: var(--teal);
   font: .68rem 'DM Mono', monospace;
   letter-spacing: .1em;
   text-align: center;
 }
 
 .alarm-visual small {
-  color: var(--faint);
+  color: var(--muted);
   font-size: .55rem;
 }
 
@@ -314,6 +306,7 @@ h2 {
 .interval-control {
   padding: 1.1rem;
   border: 1px solid var(--line);
+  border-left: 3px solid var(--teal);
   background: var(--panel);
 }
 
@@ -352,6 +345,7 @@ h2 {
   margin-top: .7rem;
   padding: .85rem 1.1rem;
   border: 1px solid var(--line);
+  border-left: 3px solid var(--red);
   background: var(--panel);
 }
 
@@ -426,6 +420,7 @@ h2 {
   grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+  background: var(--panel);
 }
 
 .telemetry div {
@@ -523,6 +518,7 @@ footer span {
 
   .alarm-visual {
     width: min(100%, 19rem);
+    box-shadow: .6rem .6rem 0 rgba(118, 229, 206, .08);
   }
 
   .telemetry {
