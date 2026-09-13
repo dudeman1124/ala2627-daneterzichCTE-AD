@@ -1,8 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fira+Code:wght@400;500;600;700&family=Share+Tech+Mono&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
 @font-face {
-  font-family: 'VCR OSD Mono';
-  src: url('assets/VCR_OSD_MONO_1.001.ttf') format('truetype');
+  font-family: 'GorDIN';
+  src: local('GorDIN');
   font-display: swap;
 }
 
@@ -21,8 +19,8 @@
   --grid-line: rgba(0, 255, 0, .025);
   --glow: rgba(112, 230, 192, .09);
   --command-bg: #08120f;
-  --font-body: 'Terminal', monospace;
-  --font-mono: 'Terminal', monospace;
+  --font-body: 'GorDIN', monospace;
+  --font-mono: 'GorDIN', monospace;
 }
 
 :root[data-theme='greyscale'] {
@@ -40,8 +38,8 @@
   --grid-line: rgba(255, 255, 255, .045);
   --glow: rgba(255, 255, 255, .08);
   --command-bg: #0d0d0d;
-  --font-body: 'VCR OSD Mono', monospace;
-  --font-mono: 'VCR OSD Mono', monospace;
+  --font-body: 'GorDIN', monospace;
+  --font-mono: 'GorDIN', monospace;
 }
 
 :root[data-theme='futurepunk'] {
@@ -59,8 +57,8 @@
   --grid-line: rgba(234, 255, 85, .04);
   --glow: rgba(255, 86, 201, .2);
   --command-bg: #160b20;
-  --font-body: 'Space Grotesk', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-body: 'GorDIN', monospace;
+  --font-mono: 'GorDIN', monospace;
 }
 
 :root[data-theme='matrix'] {
@@ -78,8 +76,8 @@
   --grid-line: rgba(85, 255, 112, .035);
   --glow: rgba(85, 255, 112, .14);
   --command-bg: #020d05;
-  --font-body: 'Fira Code', monospace;
-  --font-mono: 'Fira Code', monospace;
+  --font-body: 'GorDIN', monospace;
+  --font-mono: 'GorDIN', monospace;
 }
 
 :root[data-theme='halflife'] {
@@ -97,8 +95,8 @@
   --grid-line: rgba(230, 166, 45, .025);
   --glow: rgba(216, 117, 45, .1);
   --command-bg: #171a18;
-  --font-body: 'Share Tech Mono', monospace;
-  --font-mono: 'Share Tech Mono', monospace;
+  --font-body: 'GorDIN', monospace;
+  --font-mono: 'GorDIN', monospace;
 }
 
 * {
@@ -168,6 +166,23 @@ body::before {
   will-change: transform;
 }
 
+.halflife-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(21, 23, 23, .88), rgba(42, 43, 31, .58) 48%, rgba(21, 23, 23, .82)),
+    linear-gradient(180deg, rgba(12, 17, 16, .5), rgba(21, 23, 23, .88)),
+    url('https://images5.alphacoders.com/138/1380899.png') center / cover no-repeat;
+  opacity: 0;
+  transition: opacity 350ms ease;
+}
+
+:root[data-theme='halflife'] .halflife-backdrop {
+  opacity: .86;
+}
+
 :root[data-theme='futurepunk'] .future-city {
   opacity: .27;
 }
@@ -186,7 +201,7 @@ body::before {
   overflow: hidden;
   pointer-events: none;
   color: var(--acid);
-  font: clamp(.28rem, .7vw, .65rem)/.9 'Terminal', monospace;
+  font: clamp(.28rem, .7vw, .65rem)/.9 var(--font-mono);
   opacity: 0;
   text-align: center;
   white-space: pre;
@@ -437,7 +452,7 @@ input:focus {
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font: .68rem 'DM Mono', monospace;
+  font: .68rem var(--font-mono);
 }
 
 .theme-button:hover,
@@ -571,7 +586,7 @@ h2 {
 :root[data-theme='default'] .command-card h3,
 :root[data-theme='default'] .command-line,
 :root[data-theme='default'] .copy-button {
-  font-family: 'Terminal', monospace;
+  font-family: var(--font-mono);
 }
 
 :root[data-theme='default'] .command-line {
@@ -777,7 +792,7 @@ h2 {
 
 .card-number {
   color: var(--faint);
-  font: .68rem 'DM Mono', monospace;
+  font: .68rem var(--font-mono);
 }
 
 .command-card h3 {
@@ -827,7 +842,7 @@ h2 {
 .empty-state {
   padding: 4rem 0;
   color: var(--muted);
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   text-align: center;
 }
 
