@@ -1,22 +1,38 @@
 const commands = [
-  { name: 'Get-ComputerInfo', category: 'discover', label: 'System', description: 'Read a broad snapshot of the Windows version, hardware, BIOS, and environment.', command: 'Get-ComputerInfo' },
-  { name: 'Get-Process', category: 'discover', label: 'Processes', description: 'List running processes, then sort or filter them by CPU, memory, or name.', command: 'Get-Process | Sort-Object CPU -Descending' },
-  { name: 'Get-Service', category: 'discover', label: 'Services', description: 'See services and their current state. Some service details may be restricted.', command: 'Get-Service | Sort-Object Status, DisplayName' },
-  { name: 'Get-WinEvent', category: 'discover', label: 'Events', description: 'Read Windows event logs you have permission to access, newest events first.', command: 'Get-WinEvent -LogName System -MaxEvents 20' },
-  { name: 'Get-CimInstance', category: 'discover', label: 'Inventory', description: 'Query useful management data such as memory, disks, and operating-system details.', command: 'Get-CimInstance Win32_OperatingSystem' },
-  { name: 'Get-ChildItem', category: 'files', label: 'Files', description: 'List files and folders. The alias dir also works in PowerShell.', command: 'Get-ChildItem -Force' },
-  { name: 'Get-Content', category: 'files', label: 'Read', description: 'Read a text file without opening a separate editor.', command: 'Get-Content .\\notes.txt -Tail 20' },
-  { name: 'Select-String', category: 'files', label: 'Search', description: 'Search text inside files with a pattern and return matching lines.', command: 'Select-String -Path .\\*.log -Pattern "error"' },
-  { name: 'Get-FileHash', category: 'files', label: 'Verify', description: 'Create a SHA-256 fingerprint so you can compare file contents safely.', command: 'Get-FileHash .\\download.zip -Algorithm SHA256' },
-  { name: 'Get-NetIPConfiguration', category: 'network', label: 'Network', description: 'Inspect adapters, IP addresses, gateways, and DNS settings.', command: 'Get-NetIPConfiguration' },
-  { name: 'Test-NetConnection', category: 'network', label: 'Test', description: 'Check DNS and whether a host or TCP port can be reached from this PC.', command: 'Test-NetConnection example.com -Port 443' },
-  { name: 'Resolve-DnsName', category: 'network', label: 'DNS', description: 'Ask configured DNS servers to resolve a hostname or inspect a record.', command: 'Resolve-DnsName example.com' },
-  { name: 'Get-NetTCPConnection', category: 'network', label: 'Sockets', description: 'View current TCP connections and their owning process IDs.', command: 'Get-NetTCPConnection -State Established' },
-  { name: 'Get-Location', category: 'automate', label: 'Navigate', description: 'Print the current folder. The alias pwd is familiar to many shell users.', command: 'Get-Location' },
-  { name: 'Measure-Object', category: 'automate', label: 'Count', description: 'Count files, lines, or values as part of a pipeline.', command: 'Get-ChildItem | Measure-Object' },
-  { name: 'Export-Csv', category: 'automate', label: 'Export', description: 'Save structured command output as a CSV you can open in Excel.', command: 'Get-Process | Export-Csv .\\processes.csv -NoTypeInformation' },
-  { name: 'Get-Date', category: 'automate', label: 'Time', description: 'Get the local date and time, or format it for filenames and logs.', command: 'Get-Date -Format "yyyy-MM-dd HH:mm"' },
-  { name: 'Get-Clipboard', category: 'automate', label: 'Clipboard', description: 'Read the current user clipboard and pipe it into another command.', command: 'Get-Clipboard' }
+  { page: 1, name: 'Get-ComputerInfo', category: 'discover', label: 'System', description: 'Read a broad snapshot of the Windows version, hardware, BIOS, and environment.', command: 'Get-ComputerInfo' },
+  { page: 1, name: 'Get-Process', category: 'discover', label: 'Processes', description: 'List running processes, then sort or filter them by CPU, memory, or name.', command: 'Get-Process | Sort-Object CPU -Descending' },
+  { page: 1, name: 'Get-Service', category: 'discover', label: 'Services', description: 'See services and their current state. Some service details may be restricted.', command: 'Get-Service | Sort-Object Status, DisplayName' },
+  { page: 1, name: 'Get-WinEvent', category: 'discover', label: 'Events', description: 'Read Windows event logs you have permission to access, newest events first.', command: 'Get-WinEvent -LogName System -MaxEvents 20' },
+  { page: 1, name: 'Get-CimInstance', category: 'discover', label: 'Inventory', description: 'Query useful management data such as memory, disks, and operating-system details.', command: 'Get-CimInstance Win32_OperatingSystem' },
+  { page: 1, name: 'Get-ChildItem', category: 'files', label: 'Files', description: 'List files and folders. The alias dir also works in PowerShell.', command: 'Get-ChildItem -Force' },
+  { page: 1, name: 'Get-Content', category: 'files', label: 'Read', description: 'Read a text file without opening a separate editor.', command: 'Get-Content .\\notes.txt -Tail 20' },
+  { page: 1, name: 'Select-String', category: 'files', label: 'Search', description: 'Search text inside files with a pattern and return matching lines.', command: 'Select-String -Path .\\*.log -Pattern "error"' },
+  { page: 1, name: 'Get-FileHash', category: 'files', label: 'Verify', description: 'Create a SHA-256 fingerprint so you can compare file contents safely.', command: 'Get-FileHash .\\download.zip -Algorithm SHA256' },
+  { page: 1, name: 'Get-NetIPConfiguration', category: 'network', label: 'Network', description: 'Inspect adapters, IP addresses, gateways, and DNS settings.', command: 'Get-NetIPConfiguration' },
+  { page: 1, name: 'Test-NetConnection', category: 'network', label: 'Test', description: 'Check DNS and whether a host or TCP port can be reached from this PC.', command: 'Test-NetConnection example.com -Port 443' },
+  { page: 1, name: 'Resolve-DnsName', category: 'network', label: 'DNS', description: 'Ask configured DNS servers to resolve a hostname or inspect a record.', command: 'Resolve-DnsName example.com' },
+  { page: 1, name: 'Get-NetTCPConnection', category: 'network', label: 'Sockets', description: 'View current TCP connections and their owning process IDs.', command: 'Get-NetTCPConnection -State Established' },
+  { page: 1, name: 'Get-Location', category: 'automate', label: 'Navigate', description: 'Print the current folder. The alias pwd is familiar to many shell users.', command: 'Get-Location' },
+  { page: 1, name: 'Measure-Object', category: 'automate', label: 'Count', description: 'Count files, lines, or values as part of a pipeline.', command: 'Get-ChildItem | Measure-Object' },
+  { page: 1, name: 'Export-Csv', category: 'automate', label: 'Export', description: 'Save structured command output as a CSV you can open in Excel.', command: 'Get-Process | Export-Csv .\\processes.csv -NoTypeInformation' },
+  { page: 1, name: 'Get-Date', category: 'automate', label: 'Time', description: 'Get the local date and time, or format it for filenames and logs.', command: 'Get-Date -Format "yyyy-MM-dd HH:mm"' },
+  { page: 1, name: 'Get-Clipboard', category: 'automate', label: 'Clipboard', description: 'Read the current user clipboard and pipe it into another command.', command: 'Get-Clipboard' },
+  { page: 2, name: 'Get-Counter', category: 'discover', label: 'Performance', description: 'Sample Windows performance counters to inspect CPU, memory, disk, or network pressure.', command: 'Get-Counter "\\Processor(_Total)\\% Processor Time" -SampleInterval 2 -MaxSamples 5' },
+  { page: 2, name: 'Get-ScheduledTask', category: 'discover', label: 'Tasks', description: 'Review scheduled tasks and their current state without changing them.', command: 'Get-ScheduledTask | Where-Object State -eq "Ready"' },
+  { page: 2, name: 'Get-Volume', category: 'discover', label: 'Storage', description: 'Inspect mounted volumes, file systems, health, and available space.', command: 'Get-Volume | Select-Object DriveLetter, FileSystem, SizeRemaining, Size' },
+  { page: 2, name: 'Get-Acl', category: 'files', label: 'Permissions', description: 'Read access-control entries on a file or folder to understand its permissions.', command: 'Get-Acl .\\reports | Format-List' },
+  { page: 2, name: 'Get-ChildItem', category: 'files', label: 'Inventory', description: 'Build a recursive file inventory and sort it by size for cleanup work.', command: 'Get-ChildItem .\\logs -File -Recurse | Sort-Object Length -Descending' },
+  { page: 2, name: 'Get-NetRoute', category: 'network', label: 'Routes', description: 'Inspect the local routing table and identify the path Windows will use.', command: 'Get-NetRoute -AddressFamily IPv4 | Sort-Object RouteMetric' },
+  { page: 2, name: 'Get-DnsClientCache', category: 'network', label: 'Cache', description: 'Inspect locally cached DNS records while troubleshooting name resolution.', command: 'Get-DnsClientCache | Sort-Object Entry' },
+  { page: 2, name: 'ForEach-Object', category: 'automate', label: 'Pipeline', description: 'Run an operation for each pipeline item and shape the output you need.', command: 'Get-ChildItem -File | ForEach-Object { $_.Name.ToUpper() }' },
+  { page: 2, name: 'Where-Object', category: 'automate', label: 'Filter', description: 'Keep only objects matching a property or script condition in a pipeline.', command: 'Get-Process | Where-Object CPU -gt 60 | Sort-Object CPU -Descending' },
+  { page: 3, name: 'Invoke-Command', category: 'network', label: 'Remote', description: 'Run a read-only diagnostic command on a permitted remote computer or session.', command: 'Invoke-Command -ComputerName SERVER01 -ScriptBlock { Get-Process }' },
+  { page: 3, name: 'Get-WinEvent', category: 'discover', label: 'Query', description: 'Use a structured filter to search large event logs efficiently by provider and ID.', command: 'Get-WinEvent -FilterHashtable @{ LogName="System"; Id=6005,6006 }' },
+  { page: 3, name: 'Get-CimAssociatedInstance', category: 'discover', label: 'Relations', description: 'Follow CIM relationships to connect devices, services, and system resources.', command: 'Get-CimInstance Win32_NetworkAdapter | Get-CimAssociatedInstance -ResultClassName Win32_NetworkAdapterConfiguration' },
+  { page: 3, name: 'Compare-Object', category: 'files', label: 'Diff', description: 'Compare two command outputs or snapshots and surface what changed.', command: 'Compare-Object (Get-Content .\\before.txt) (Get-Content .\\after.txt)' },
+  { page: 3, name: 'Group-Object', category: 'automate', label: 'Aggregate', description: 'Group pipeline results by a property to reveal patterns and outliers.', command: 'Get-WinEvent -LogName System -MaxEvents 100 | Group-Object ProviderName | Sort-Object Count -Descending' },
+  { page: 3, name: 'Tee-Object', category: 'automate', label: 'Trace', description: 'Capture intermediate pipeline output while continuing to pass it onward.', command: 'Get-Process | Tee-Object .\\process-snapshot.txt | Sort-Object CPU -Descending' },
+  { page: 3, name: 'Measure-Command', category: 'automate', label: 'Benchmark', description: 'Measure how long a command takes so you can compare approaches.', command: 'Measure-Command { Get-ChildItem -File -Recurse | Measure-Object }' }
 ];
 
 const grid = document.querySelector('#command-grid');
@@ -24,6 +40,8 @@ const search = document.querySelector('#command-search');
 const filters = document.querySelector('#filters');
 const emptyState = document.querySelector('#empty-state');
 const resultCount = document.querySelector('#result-count');
+const pageNote = document.querySelector('#page-note');
+const pageButtons = document.querySelector('#page-buttons');
 const themeOptions = document.querySelector('#theme-options');
 const matrixCanvas = document.querySelector('#matrix-rain');
 const matrixContext = matrixCanvas.getContext('2d');
@@ -32,6 +50,12 @@ const glitchContext = glitchCanvas.getContext('2d');
 const rickStream = document.querySelector('#rick-stream');
 const futureCity = document.querySelector('#future-city');
 let activeFilter = 'all';
+let activePage = 1;
+const pageNames = {
+  1: 'Foundations / everyday inspection',
+  2: 'Operator / diagnostics and pipelines',
+  3: 'Advanced / remote and analytical work'
+};
 let matrixAnimation;
 let glitchAnimation;
 let rickAnimation;
@@ -198,7 +222,15 @@ function setTheme(theme) {
 
 function render() {
   const query = search.value.trim().toLowerCase();
-  const visible = commands.filter((item) => {
+  const pageCommands = commands.filter((item) => item.page === activePage);
+  filters.querySelectorAll('[data-filter]').forEach((button) => {
+    const filter = button.dataset.filter;
+    const count = filter === 'all'
+      ? pageCommands.length
+      : pageCommands.filter((item) => item.category === filter).length;
+    button.querySelector('span').textContent = String(count);
+  });
+  const visible = pageCommands.filter((item) => {
     const matchesFilter = activeFilter === 'all' || item.category === activeFilter;
     const searchable = `${item.name} ${item.label} ${item.description} ${item.command}`.toLowerCase();
     return matchesFilter && searchable.includes(query);
@@ -206,6 +238,12 @@ function render() {
 
   resultCount.textContent = String(visible.length).padStart(2, '0');
   emptyState.hidden = visible.length > 0;
+  pageNote.textContent = pageNames[activePage];
+  pageButtons.innerHTML = [1, 2, 3].map((page) => `
+    <button class="page-button${page === activePage ? ' is-active' : ''}" data-page="${page}" type="button" aria-current="${page === activePage ? 'page' : 'false'}">
+      <span>0${page}</span>${pageNames[page].split(' / ')[0]}
+    </button>
+  `).join('');
   grid.innerHTML = visible.map((item, index) => `
     <article class="command-card">
       <div class="card-top"><span class="tag">${item.label}</span><span class="card-number">${String(index + 1).padStart(2, '0')}</span></div>
@@ -220,8 +258,16 @@ filters.addEventListener('click', (event) => {
   const button = event.target.closest('[data-filter]');
   if (!button) return;
   activeFilter = button.dataset.filter;
+  activePage = 1;
   filters.querySelectorAll('.filter-button').forEach((item) => item.classList.toggle('is-active', item === button));
   render();
+});
+pageButtons.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-page]');
+  if (!button) return;
+  activePage = Number(button.dataset.page);
+  render();
+  document.querySelector('.library-heading').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 search.addEventListener('input', render);
 grid.addEventListener('click', async (event) => {

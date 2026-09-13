@@ -846,6 +846,64 @@ h2 {
   text-align: center;
 }
 
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  align-items: end;
+  padding: 1.5rem 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.pagination .section-label {
+  margin-bottom: .35rem;
+}
+
+.pagination-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.page-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: .5rem;
+}
+
+.page-button {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  min-width: 8.5rem;
+  padding: .6rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: .68rem var(--font-mono);
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.page-button span {
+  color: var(--faint);
+  font-size: .75rem;
+}
+
+.page-button:hover,
+.page-button.is-active {
+  border-color: var(--acid);
+  background: color-mix(in srgb, var(--acid) 10%, transparent);
+  color: var(--acid);
+}
+
+.page-button.is-active span {
+  color: var(--orange);
+}
+
 .workflow-band {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -922,6 +980,21 @@ footer span {
 
   .theme-options {
     justify-content: start;
+  }
+
+  .pagination {
+    align-items: start;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .page-buttons {
+    justify-content: start;
+    width: 100%;
+  }
+
+  .page-button {
+    flex: 1 1 8.5rem;
   }
 
   footer {
