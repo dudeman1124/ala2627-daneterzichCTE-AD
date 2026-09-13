@@ -345,6 +345,10 @@ h1 {
   line-height: .78;
 }
 
+:root[data-theme='matrix'] h1 {
+  font-family: 'Terminal', monospace;
+}
+
 h1 em {
   color: var(--acid);
   font-style: normal;
