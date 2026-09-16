@@ -22,7 +22,17 @@ const trackCurve = new THREE.CatmullRomCurve3(trackPoints, true, 'catmullrom', .
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(62, 1, .1, 900);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-const car = { progress: 0, lateral: 0, speed: 0 };
+const car = {
+  position: new THREE.Vector3(),
+  velocity: new THREE.Vector3(),
+  heading: 0,
+  progress: 0,
+  roll: 0,
+  pitch: 0,
+  rollVelocity: 0,
+  verticalVelocity: 0,
+  overturned: false
+};
 const carGroup = new THREE.Group();
 let roadMesh;
 let raceTime = 0;
@@ -167,9 +177,18 @@ function makeCar() {
 }
 
 function resetCar() {
+  const start = trackCurve.getPointAt(0);
+  const tangent = trackCurve.getTangentAt(0).normalize();
+  car.position.copy(start);
+  car.position.y += .25;
+  car.velocity.set(0, 0, 0);
+  car.heading = Math.atan2(tangent.x, tangent.z);
   car.progress = 0;
-  car.lateral = 0;
-  car.speed = 0;
+  car.roll = 0;
+  car.pitch = Math.atan2(tangent.y, Math.hypot(tangent.x, tangent.z));
+  car.rollVelocity = 0;
+  car.verticalVelocity = 0;
+  car.overturned = false;
   completedLaps = 0;
   raceTime = 0;
   raceStarted = false;
@@ -178,52 +197,129 @@ function resetCar() {
   messageElement.textContent = 'READY?';
   messageElement.style.opacity = '1';
   updateHud();
-  updateCarTransform(0);
+  updateCarTransform();
 }
 
-function updateCarTransform(progress) {
-  const point = trackCurve.getPointAt(progress);
-  const tangent = trackCurve.getTangentAt(progress).normalize();
-  const side = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-  carGroup.position.copy(point).addScaledVector(side, car.lateral);
-  carGroup.position.y += .25;
-  carGroup.rotation.y = Math.atan2(tangent.x, tangent.z);
+function nearestTrackPoint(position) {
+  let nearest = trackCurve.getPointAt(0);
+  let nearestProgress = 0;
+  let nearestDistance = Infinity;
+  for (let index = 0; index < trackSamples; index += 1) {
+    const progress = index / trackSamples;
+    const point = trackCurve.getPointAt(progress);
+    const distance = point.distanceToSquared(position);
+    if (distance < nearestDistance) {
+      nearest = point;
+      nearestProgress = progress;
+      nearestDistance = distance;
+    }
+  }
+  return { point: nearest, progress: nearestProgress, distance: Math.sqrt(nearestDistance) };
+}
+
+function updateCarTransform() {
+  carGroup.position.copy(car.position);
+  carGroup.rotation.set(car.pitch, car.heading, car.roll, 'YXZ');
 }
 
 function updateCamera(delta) {
-  const point = trackCurve.getPointAt(car.progress);
-  const tangent = trackCurve.getTangentAt(car.progress).normalize();
-  const desired = point.clone().addScaledVector(tangent, -13).add(new THREE.Vector3(0, 7.5, 0));
+  const forward = new THREE.Vector3(Math.sin(car.heading), 0, Math.cos(car.heading));
+  const desired = car.position.clone().addScaledVector(forward, -13).add(new THREE.Vector3(0, 7.5, 0));
   camera.position.lerp(desired, 1 - Math.pow(.001, delta));
-  camera.lookAt(point.clone().addScaledVector(tangent, 8).add(new THREE.Vector3(0, 1.2, 0)));
+  camera.lookAt(car.position.clone().addScaledVector(forward, 8).add(new THREE.Vector3(0, 1.2, 0)));
 }
 
 function update(delta) {
   const accelerating = keys.has('w') || keys.has('arrowup');
-  const braking = keys.has('s') || keys.has('arrowdown') || keys.has(' ');
+  const reversing = keys.has('s') || keys.has('arrowdown');
+  const braking = keys.has(' ');
   const steering = (keys.has('a') || keys.has('arrowleft') ? -1 : 0) + (keys.has('d') || keys.has('arrowright') ? 1 : 0);
-  const maximumSpeed = 49;
-  const acceleration = 35;
-  if (accelerating) {
-    car.speed = Math.min(maximumSpeed, car.speed + acceleration * delta);
+  const forward = new THREE.Vector3(Math.sin(car.heading), 0, Math.cos(car.heading));
+  const signedSpeed = car.velocity.dot(forward);
+  const throttle = accelerating ? 1 : reversing ? -1 : 0;
+  const maximumForwardSpeed = 49;
+  const maximumReverseSpeed = 18;
+  const engineForce = throttle > 0 ? 35 : 19;
+  const rollingDrag = 1.7;
+  const aerodynamicDrag = .006;
+
+  if (throttle !== 0 && !car.overturned) {
+    car.velocity.addScaledVector(forward, throttle * engineForce * delta);
     raceStarted = true;
     messageElement.style.opacity = '0';
-  } else {
-    car.speed = Math.max(0, car.speed - 9 * delta);
   }
-  if (braking) car.speed = Math.max(0, car.speed - 48 * delta);
-  car.lateral += steering * (10 + car.speed * .12) * delta;
-  car.lateral = THREE.MathUtils.clamp(car.lateral, -roadWidth * .43, roadWidth * .43);
-  if (Math.abs(car.lateral) > roadWidth * .34) car.speed = Math.max(0, car.speed - 18 * delta);
+
+  if (braking && !car.overturned) {
+    car.velocity.multiplyScalar(Math.max(0, 1 - 7 * delta));
+  }
+
+  const speed = car.velocity.length();
+  if (speed > .01) {
+    const drag = rollingDrag + aerodynamicDrag * speed * speed;
+    car.velocity.addScaledVector(car.velocity, -drag * delta / speed);
+  }
+
+  const lateralVelocity = car.velocity.clone().addScaledVector(forward, -signedSpeed);
+  car.velocity.addScaledVector(lateralVelocity, -Math.min(1, 8 * delta));
+
+  const limitedSpeed = car.velocity.dot(forward);
+  if (limitedSpeed > maximumForwardSpeed) {
+    car.velocity.addScaledVector(forward, maximumForwardSpeed - limitedSpeed);
+  }
+  if (limitedSpeed < -maximumReverseSpeed) {
+    car.velocity.addScaledVector(forward, -maximumReverseSpeed - limitedSpeed);
+  }
+
+  const steeringGrip = THREE.MathUtils.clamp(Math.abs(signedSpeed) / 12, 0, 1);
+  if (!car.overturned) {
+    car.heading += steering * (1.65 + steeringGrip * .85) * Math.sign(signedSpeed || 1) * delta;
+  }
+
+  const lateralAcceleration = Math.abs(steering * signedSpeed * signedSpeed / 15);
+  const rollTarget = THREE.MathUtils.clamp(-steering * lateralAcceleration * .045, -1.45, 1.45);
+  if (!car.overturned) {
+    car.rollVelocity += (rollTarget - car.roll) * 9 * delta;
+    car.rollVelocity *= Math.max(0, 1 - 5 * delta);
+    car.roll += car.rollVelocity * delta;
+    if (Math.abs(car.roll) > 1.18 && Math.abs(signedSpeed) > 22) {
+      car.overturned = true;
+      car.verticalVelocity = 2.8;
+      messageElement.textContent = 'ROLLOVER';
+      messageElement.style.opacity = '1';
+    }
+  } else {
+    car.rollVelocity += steering * 4 * delta;
+    car.rollVelocity *= Math.max(0, 1 - 1.1 * delta);
+    car.roll += car.rollVelocity * delta;
+    car.verticalVelocity -= 18 * delta;
+  }
+
+  car.position.addScaledVector(car.velocity, delta);
+  const location = nearestTrackPoint(car.position);
+  const onRoad = location.distance < roadWidth * .58;
+  const surfaceY = onRoad ? location.point.y : -1.2;
+  if (onRoad && !car.overturned) {
+    car.position.y = surfaceY + .25;
+    car.verticalVelocity = 0;
+  } else if (car.position.y <= surfaceY + .25) {
+    car.position.y = surfaceY + .25;
+    car.verticalVelocity = Math.max(0, car.verticalVelocity);
+  } else {
+    car.position.y += car.verticalVelocity * delta;
+  }
+  if (onRoad && !car.overturned) {
+    const tangent = trackCurve.getTangentAt(location.progress).normalize();
+    car.pitch = Math.atan2(tangent.y, Math.hypot(tangent.x, tangent.z));
+  }
 
   const previousProgress = car.progress;
-  car.progress = (car.progress + car.speed * delta / trackCurve.getLength()) % 1;
-  if (previousProgress > .8 && car.progress < .2 && car.speed > 5) {
+  if (onRoad) car.progress = location.progress;
+  if (onRoad && previousProgress > .8 && car.progress < .2 && signedSpeed > 5) {
     completedLaps += 1;
     if (completedLaps >= lapsToWin) finishRace();
   }
   if (raceStarted && !finished) raceTime += delta;
-  updateCarTransform(car.progress);
+  updateCarTransform();
   updateHud();
 }
 
@@ -255,7 +351,8 @@ function formatTime(seconds) {
 function updateHud() {
   lapElement.textContent = `${Math.min(completedLaps + 1, lapsToWin)} / ${lapsToWin}`;
   timeElement.textContent = formatTime(raceTime);
-  speedElement.textContent = Math.round(car.speed * 3.6);
+  const forward = new THREE.Vector3(Math.sin(car.heading), 0, Math.cos(car.heading));
+  speedElement.textContent = Math.round(car.velocity.dot(forward) * 3.6);
   bestElement.textContent = bestTime ? formatTime(bestTime) : '--:--.---';
 }
 

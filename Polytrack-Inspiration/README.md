@@ -12,4 +12,4 @@ python3 -m http.server 8000 --directory Polytrack-Inspiration
 
 Then open `http://localhost:8000/`.
 
-Controls: `WASD` to drive, `Space` to brake, `Escape` to pause, and `R` to reset. The game uses Three.js from jsDelivr, so the browser needs internet access when it loads.
+Controls: `W` accelerates, `S` drives backward, `A/D` steer, `Space` brakes, `Escape` pauses, and `R` resets. The game uses Three.js from jsDelivr, so the browser needs internet access when it loads.
