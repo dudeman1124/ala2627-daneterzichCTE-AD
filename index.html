@@ -25,6 +25,30 @@
     <p class="tagline">Live the day like it's your last.</p>
   </header>
 
+  <section class="directory-jump glass-panel" aria-labelledby="directory-jump-title">
+    <div class="terminal-bar">
+      <p id="directory-jump-title">Directory jump</p>
+      <span aria-hidden="true">READY</span>
+    </div>
+    <form id="directory-form" class="directory-form">
+      <label for="directory-input">Open a project directory</label>
+      <div class="directory-input-row">
+        <span class="terminal-prompt" aria-hidden="true">$</span>
+        <input id="directory-input" name="directory" list="project-directories" placeholder="cmd-library"
+          autocomplete="off" spellcheck="false" required>
+        <button type="submit">OPEN</button>
+      </div>
+      <datalist id="project-directories">
+        <option value="cmd-library"></option>
+        <option value="Polytrack-Inspiration"></option>
+        <option value="DT-GPT"></option>
+        <option value="smoke-detector"></option>
+        <option value="assignments/01-this-is-me"></option>
+      </datalist>
+      <p id="directory-status" class="directory-status" role="status">Type a project directory and press Enter.</p>
+    </form>
+  </section>
+
   <main>
 
     <section class="bento-card bento-card--wide glass-panel">
@@ -68,30 +92,6 @@
       <span class="terminal-cursor" aria-hidden="true"></span>
     </a>
     <p class="terminal-status">Click the command to open the live ASCII stream.</p>
-  </section>
-
-  <section class="directory-jump glass-panel" aria-labelledby="directory-jump-title">
-    <div class="terminal-bar">
-      <p id="directory-jump-title">Directory jump</p>
-      <span aria-hidden="true">READY</span>
-    </div>
-    <form id="directory-form" class="directory-form">
-      <label for="directory-input">Open a project directory</label>
-      <div class="directory-input-row">
-        <span class="terminal-prompt" aria-hidden="true">$</span>
-        <input id="directory-input" name="directory" list="project-directories" placeholder="cmd-library"
-          autocomplete="off" spellcheck="false" required>
-        <button type="submit">OPEN</button>
-      </div>
-      <datalist id="project-directories">
-        <option value="cmd-library"></option>
-        <option value="Polytrack-Inspiration"></option>
-        <option value="DT-GPT"></option>
-        <option value="smoke-detector"></option>
-        <option value="assignments/01-this-is-me"></option>
-      </datalist>
-      <p id="directory-status" class="directory-status" role="status">Type a project directory and press Enter.</p>
-    </form>
   </section>
 
   <footer class="footer-note">
