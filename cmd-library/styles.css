@@ -596,6 +596,11 @@ input:focus {
   box-shadow: 0 .8rem 2rem rgba(0, 0, 0, .35);
 }
 
+.theme-options[hidden],
+.silver-audio[hidden] {
+  display: none;
+}
+
 .theme-button {
   display: inline-flex;
   align-items: center;
