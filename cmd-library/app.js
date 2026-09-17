@@ -47,6 +47,8 @@ const matrixCanvas = document.querySelector('#matrix-rain');
 const matrixContext = matrixCanvas.getContext('2d');
 const glitchCanvas = document.querySelector('#glitch-background');
 const glitchContext = glitchCanvas.getContext('2d');
+const humanoidHitTarget = document.querySelector('#humanoid-hit-target');
+const jojoThemeButton = document.querySelector('#jojo-theme-button');
 const rickStream = document.querySelector('#rick-stream');
 const futureCity = document.querySelector('#future-city');
 let activeFilter = 'all';
@@ -62,6 +64,14 @@ let rickAnimation;
 let rickFrames = [];
 let rickFrameIndex = 0;
 let cityScrollFrame;
+let jojoUnlocked = localStorage.getItem('cmd-library-jojo-unlocked') === 'true';
+
+function setJojoUnlocked(isUnlocked) {
+  jojoUnlocked = isUnlocked;
+  document.documentElement.classList.toggle('jojo-unlocked', isUnlocked);
+  jojoThemeButton.hidden = !isUnlocked;
+  if (isUnlocked) localStorage.setItem('cmd-library-jojo-unlocked', 'true');
+}
 
 async function loadRickStream() {
   try {
@@ -220,6 +230,71 @@ function setTheme(theme) {
   setRickState(theme === 'default');
 }
 
+function pointIsNearSegment(pointX, pointY, startX, startY, endX, endY, distance) {
+  const segmentX = endX - startX;
+  const segmentY = endY - startY;
+  const lengthSquared = segmentX * segmentX + segmentY * segmentY;
+  const progress = lengthSquared === 0
+    ? 0
+    : Math.max(0, Math.min(1, ((pointX - startX) * segmentX + (pointY - startY) * segmentY) / lengthSquared));
+  const closestX = startX + progress * segmentX;
+  const closestY = startY + progress * segmentY;
+  return Math.hypot(pointX - closestX, pointY - closestY) <= distance;
+}
+
+function pointIsOnHumanoid(pointX, pointY) {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const scale = Math.min(width, height) / 650;
+  const phase = performance.now() / 1000;
+  const figureX = width * .72 + Math.sin(phase * 2.1) * 5;
+  const figureY = height * .51;
+  const hitDistance = Math.max(12, 16 * scale);
+  const points = [
+    [-35, -120, -72, -92],
+    [-72, -92, -87, 0],
+    [-87, 0, -68, 105],
+    [35, -120, 72, -92],
+    [72, -92, 87, 0],
+    [87, 0, 68, 105],
+    [-35, -120, -15, -135],
+    [-15, -135, 15, -135],
+    [15, -135, 35, -120],
+    [35, -120, 44, 50],
+    [44, 50, 31, 155],
+    [-35, -120, -44, 50],
+    [-44, 50, -31, 155],
+    [-35, -120, -105, -45],
+    [-105, -45, -135, 40],
+    [35, -120, 105, -45],
+    [105, -45, 135, 40]
+  ];
+  const nearBody = points.some(([startX, startY, endX, endY]) => pointIsNearSegment(
+    pointX,
+    pointY,
+    figureX + startX * scale,
+    figureY + startY * scale,
+    figureX + endX * scale,
+    figureY + endY * scale,
+    hitDistance
+  ));
+  const headDistance = Math.hypot(pointX - figureX, pointY - (figureY - 160 * scale));
+  return nearBody || headDistance <= 35 * scale + hitDistance;
+}
+
+glitchCanvas.addEventListener('click', (event) => {
+  if (document.documentElement.dataset.theme !== 'greyscale' || jojoUnlocked) return;
+  const bounds = glitchCanvas.getBoundingClientRect();
+  const pointX = event.clientX - bounds.left;
+  const pointY = event.clientY - bounds.top;
+  if (!pointIsOnHumanoid(pointX, pointY)) return;
+  setJojoUnlocked(true);
+});
+
+humanoidHitTarget.addEventListener('click', () => {
+  if (document.documentElement.dataset.theme === 'greyscale') setJojoUnlocked(true);
+});
+
 function render() {
   const query = search.value.trim().toLowerCase();
   const pageCommands = commands.filter((item) => item.page === activePage);
@@ -295,6 +370,7 @@ themeOptions.addEventListener('click', (event) => {
 });
 
 render();
+setJojoUnlocked(jojoUnlocked);
 setTheme(localStorage.getItem('cmd-library-theme') || 'default');
 loadRickStream().then(() => setRickState(document.documentElement.dataset.theme === 'default'));
 resizeMatrix();

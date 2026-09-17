@@ -118,6 +118,32 @@
   --font-mono: 'GorDIN', monospace;
 }
 
+:root[data-theme='jojo'] {
+  --ink: #332d25;
+  --muted: #716759;
+  --faint: #9d907d;
+  --bg: #b9ae99;
+  --panel: rgba(214, 204, 183, .94);
+  --panel-bright: rgba(229, 218, 196, .98);
+  --line: #837664;
+  --acid: #51463a;
+  --aqua: #756957;
+  --orange: #655746;
+  --danger: #7f6251;
+  --grid-line: rgba(81, 70, 58, .1);
+  --glow: rgba(255, 248, 227, .4);
+  --command-bg: rgba(191, 179, 156, .86);
+  --font-body: 'GorDIN', monospace;
+  --font-mono: 'GorDIN', monospace;
+}
+
+:root[data-theme='jojo'] body {
+  background:
+    linear-gradient(rgba(185, 174, 153, .58), rgba(185, 174, 153, .78)),
+    url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfhLhJ4E2ICrfmp_Kqe1mx6macMwqNVTsTMO0SjpA0iw&s=10') center / cover fixed,
+    var(--bg);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -171,6 +197,53 @@ body::before {
   transition: opacity 300ms ease;
 }
 
+.jojo-aura {
+  position: fixed;
+  top: 50%;
+  left: 72%;
+  z-index: 0;
+  width: min(48vw, 34rem);
+  max-height: 82vh;
+  object-fit: contain;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: multiply;
+  filter: grayscale(1) sepia(.22) contrast(1.1);
+  transform: translate(-50%, -50%) rotate(-3deg);
+  transition: opacity 350ms ease;
+}
+
+.humanoid-hit-target {
+  position: fixed;
+  top: 51%;
+  left: 72%;
+  z-index: 2;
+  width: min(34vw, 18rem);
+  height: min(58vh, 30rem);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+:root[data-theme='greyscale'] .humanoid-hit-target {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+:root.jojo-unlocked .humanoid-hit-target {
+  display: none;
+}
+
+:root.jojo-unlocked[data-theme='greyscale'] .jojo-aura {
+  opacity: .72;
+}
+
+:root[data-theme='jojo'] .jojo-aura {
+  opacity: .18;
+}
+
 .future-city {
   position: fixed;
   inset: -12vh 0;
@@ -208,6 +281,8 @@ body::before {
 
 :root[data-theme='greyscale'] .glitch-background {
   opacity: .9;
+  pointer-events: auto;
+  cursor: crosshair;
 }
 
 .rick-stream {
@@ -513,6 +588,10 @@ input:focus {
 
 .theme-swatch--cry {
   background: linear-gradient(135deg, #ff5261 50%, #579cff 50%);
+}
+
+.theme-swatch--jojo {
+  background: linear-gradient(135deg, #8f806c, #d9ccb2);
 }
 
 .shortcut {
