@@ -74,6 +74,7 @@ function setJojoUnlocked(isUnlocked) {
   document.documentElement.classList.toggle('jojo-unlocked', isUnlocked);
   jojoThemeButton.hidden = !isUnlocked;
   if (isUnlocked) localStorage.setItem('cmd-library-jojo-unlocked', 'true');
+  else localStorage.removeItem('cmd-library-jojo-unlocked');
 }
 
 async function loadRickStream() {
@@ -311,6 +312,8 @@ glitchCanvas.addEventListener('click', (event) => {
 humanoidHitTarget.addEventListener('click', () => {
   if (document.documentElement.dataset.theme === 'greyscale') setJojoUnlocked(true);
 });
+
+window.addEventListener('pagehide', () => setJojoUnlocked(false));
 
 function render() {
   const query = search.value.trim().toLowerCase();
