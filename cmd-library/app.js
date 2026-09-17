@@ -35,6 +35,27 @@ const commands = [
   { page: 3, name: 'Measure-Command', category: 'automate', label: 'Benchmark', description: 'Measure how long a command takes so you can compare approaches.', command: 'Measure-Command { Get-ChildItem -File -Recurse | Measure-Object }' }
 ];
 
+const pythonCommands = [
+  { page: 1, name: 'Variables', category: 'foundation', label: 'Foundation', description: 'Store values with clear names and inspect the result.', command: 'name = "Ada"\nprint(name)' },
+  { page: 1, name: 'Lists', category: 'foundation', label: 'Foundation', description: 'Keep an ordered collection and access one item by its position.', command: 'colors = ["red", "green", "blue"]\nprint(colors[0])' },
+  { page: 1, name: 'Dictionaries', category: 'foundation', label: 'Foundation', description: 'Represent related values with readable key-value pairs.', command: 'user = {"name": "Ada", "active": True}\nprint(user["name"])' },
+  { page: 1, name: 'Conditions', category: 'foundation', label: 'Foundation', description: 'Choose a path when a value meets a condition.', command: 'temperature = 72\nif temperature > 70:\n    print("Warm")' },
+  { page: 1, name: 'Loops', category: 'foundation', label: 'Foundation', description: 'Repeat an action for every item in a collection.', command: 'for number in range(1, 4):\n    print(number)' },
+  { page: 1, name: 'Functions', category: 'foundation', label: 'Foundation', description: 'Package a repeatable action behind a descriptive name.', command: 'def greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("Ada"))' },
+  { page: 2, name: 'List Comprehension', category: 'intermediate', label: 'Intermediate', description: 'Build a transformed list in one readable expression.', command: 'squares = [number ** 2 for number in range(1, 6)]' },
+  { page: 2, name: 'Read a File', category: 'intermediate', label: 'Intermediate', description: 'Read text safely and process each line.', command: 'from pathlib import Path\n\ntext = Path("notes.txt").read_text()\nprint(text)' },
+  { page: 2, name: 'Handle Errors', category: 'intermediate', label: 'Intermediate', description: 'Catch expected failures and give the caller a useful result.', command: 'try:\n    value = int(input("Number: "))\nexcept ValueError:\n    print("Please enter a whole number.")' },
+  { page: 2, name: 'Dataclass', category: 'intermediate', label: 'Intermediate', description: 'Model structured records without writing repetitive initialization code.', command: 'from dataclasses import dataclass\n\n@dataclass\nclass Task:\n    title: str\n    done: bool = False' },
+  { page: 2, name: 'JSON Data', category: 'intermediate', label: 'Intermediate', description: 'Convert between Python objects and portable JSON text.', command: 'import json\n\npayload = {"status": "ok"}\ntext = json.dumps(payload)\nprint(json.loads(text)["status"])' },
+  { page: 2, name: 'Generator', category: 'intermediate', label: 'Intermediate', description: 'Produce values one at a time to keep iteration lightweight.', command: 'def count_up_to(limit):\n    for number in range(1, limit + 1):\n        yield number' },
+  { page: 3, name: 'Async Task', category: 'advanced', label: 'Advanced', description: 'Run waiting work cooperatively with Python async syntax.', command: 'import asyncio\n\nasync def main():\n    await asyncio.sleep(1)\n    print("Finished")\n\nasyncio.run(main())' },
+  { page: 3, name: 'SQLite Query', category: 'advanced', label: 'Advanced', description: 'Create a local database table and query rows safely.', command: 'import sqlite3\n\nwith sqlite3.connect("app.db") as db:\n    rows = db.execute("SELECT name FROM users WHERE active = ?", (1,))\n    print(rows.fetchall())' },
+  { page: 3, name: 'HTTP Request', category: 'advanced', label: 'Advanced', description: 'Fetch JSON from a service using the standard library.', command: 'from urllib.request import urlopen\nimport json\n\nwith urlopen("https://example.com/data.json") as response:\n    data = json.load(response)' },
+  { page: 3, name: 'Context Manager', category: 'advanced', label: 'Advanced', description: 'Guarantee cleanup around resources with a reusable context manager.', command: 'from contextlib import contextmanager\n\n@contextmanager\ndef managed_resource():\n    print("open")\n    yield\n    print("close")' },
+  { page: 3, name: 'Type Protocol', category: 'advanced', label: 'Advanced', description: 'Describe the behavior an object must provide without requiring inheritance.', command: 'from typing import Protocol\n\nclass Renderable(Protocol):\n    def render(self) -> str: ...' },
+  { page: 3, name: 'Concurrent Work', category: 'advanced', label: 'Advanced', description: 'Schedule independent tasks and collect their results together.', command: 'from concurrent.futures import ThreadPoolExecutor\n\nwith ThreadPoolExecutor() as pool:\n    results = list(pool.map(str.upper, ["one", "two"]))' }
+];
+
 const grid = document.querySelector('#command-grid');
 const search = document.querySelector('#command-search');
 const filters = document.querySelector('#filters');
@@ -42,6 +63,9 @@ const emptyState = document.querySelector('#empty-state');
 const resultCount = document.querySelector('#result-count');
 const pageNote = document.querySelector('#page-note');
 const pageButtons = document.querySelector('#page-buttons');
+const libraryTitle = document.querySelector('#library-title');
+const cmdMode = document.querySelector('#cmd-mode');
+const pythonMode = document.querySelector('#python-mode');
 const themeOptions = document.querySelector('#theme-options');
 const themeToggle = document.querySelector('#theme-toggle');
 const silverAudio = document.querySelector('#silver-audio');
@@ -56,10 +80,24 @@ const rickStream = document.querySelector('#rick-stream');
 const futureCity = document.querySelector('#future-city');
 let activeFilter = 'all';
 let activePage = 1;
+let activeMode = 'cmd';
 const pageNames = {
   1: 'Foundations / everyday inspection',
   2: 'Operator / diagnostics and pipelines',
   3: 'Advanced / remote and analytical work'
+};
+const pythonPageNames = {
+  1: 'Foundational / syntax and data',
+  2: 'Intermediate / reusable programs',
+  3: 'Advanced / automation and systems'
+};
+const filterNames = {
+  cmd: { all: 'All', discover: 'Discover', files: 'Files', network: 'Network', automate: 'Automate' },
+  python: { all: 'All', foundation: 'Foundational', intermediate: 'Intermediate', advanced: 'Advanced' }
+};
+const filterKeys = {
+  cmd: ['all', 'discover', 'files', 'network', 'automate'],
+  python: ['all', 'foundation', 'intermediate', 'advanced']
 };
 let matrixAnimation;
 let glitchAnimation;
@@ -319,13 +357,19 @@ window.addEventListener('pagehide', () => setJojoUnlocked(false));
 
 function render() {
   const query = search.value.trim().toLowerCase();
-  const pageCommands = commands.filter((item) => item.page === activePage);
-  filters.querySelectorAll('[data-filter]').forEach((button) => {
-    const filter = button.dataset.filter;
+  const currentCommands = activeMode === 'python' ? pythonCommands : commands;
+  const currentPageNames = activeMode === 'python' ? pythonPageNames : pageNames;
+  const pageCommands = currentCommands.filter((item) => item.page === activePage);
+  filters.querySelectorAll('.filter-button').forEach((button, index) => {
+    const filter = filterKeys[activeMode][index];
+    button.hidden = !filter;
+    if (!filter) return;
+    button.dataset.filter = filter;
     const count = filter === 'all'
       ? pageCommands.length
       : pageCommands.filter((item) => item.category === filter).length;
-    button.querySelector('span').textContent = String(count);
+    button.innerHTML = `${filterNames[activeMode][filter]} <span>${count}</span>`;
+    button.classList.toggle('is-active', filter === activeFilter);
   });
   const visible = pageCommands.filter((item) => {
     const matchesFilter = activeFilter === 'all' || item.category === activeFilter;
@@ -335,10 +379,10 @@ function render() {
 
   resultCount.textContent = String(visible.length).padStart(2, '0');
   emptyState.hidden = visible.length > 0;
-  pageNote.textContent = pageNames[activePage];
+  pageNote.textContent = currentPageNames[activePage];
   pageButtons.innerHTML = [1, 2, 3].map((page) => `
     <button class="page-button${page === activePage ? ' is-active' : ''}" data-page="${page}" type="button" aria-current="${page === activePage ? 'page' : 'false'}">
-      <span>0${page}</span>${pageNames[page].split(' / ')[0]}
+      <span>0${page}</span>${currentPageNames[page].split(' / ')[0]}
     </button>
   `).join('');
   grid.innerHTML = visible.map((item, index) => `
@@ -359,6 +403,23 @@ filters.addEventListener('click', (event) => {
   filters.querySelectorAll('.filter-button').forEach((item) => item.classList.toggle('is-active', item === button));
   render();
 });
+function setCommandMode(mode) {
+  activeMode = mode;
+  activeFilter = 'all';
+  activePage = 1;
+  const isPython = mode === 'python';
+  cmdMode.classList.toggle('is-active', !isPython);
+  pythonMode.classList.toggle('is-active', isPython);
+  cmdMode.setAttribute('aria-pressed', String(!isPython));
+  pythonMode.setAttribute('aria-pressed', String(isPython));
+  libraryTitle.textContent = isPython ? 'The Python code toolkit' : 'The standard-user toolkit';
+  search.placeholder = isPython ? 'Try: lists, files, async...' : 'Try: network, process, files...';
+  render();
+}
+
+cmdMode.addEventListener('click', () => setCommandMode('cmd'));
+pythonMode.addEventListener('click', () => setCommandMode('python'));
+
 pageButtons.addEventListener('click', (event) => {
   const button = event.target.closest('[data-page]');
   if (!button) return;
