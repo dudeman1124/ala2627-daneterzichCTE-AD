@@ -67,7 +67,9 @@ let rickAnimation;
 let rickFrames = [];
 let rickFrameIndex = 0;
 let cityScrollFrame;
+const savedTheme = localStorage.getItem('cmd-library-theme') || 'default';
 let jojoUnlocked = localStorage.getItem('cmd-library-jojo-unlocked') === 'true';
+const shouldResetJojoOnRefresh = jojoUnlocked && ['jojo', 'greyscale'].includes(savedTheme);
 
 function setJojoUnlocked(isUnlocked) {
   jojoUnlocked = isUnlocked;
@@ -400,8 +402,8 @@ document.querySelector('#audio-pause').addEventListener('click', () => sendYouTu
 document.querySelector('#audio-stop').addEventListener('click', () => sendYouTubeCommand('stopVideo'));
 
 render();
-setJojoUnlocked(jojoUnlocked);
-setTheme(localStorage.getItem('cmd-library-theme') || 'default');
+setJojoUnlocked(shouldResetJojoOnRefresh ? false : jojoUnlocked);
+setTheme(shouldResetJojoOnRefresh ? 'default' : savedTheme);
 setThemeListOpen(false);
 loadRickStream().then(() => setRickState(document.documentElement.dataset.theme === 'default'));
 resizeMatrix();
