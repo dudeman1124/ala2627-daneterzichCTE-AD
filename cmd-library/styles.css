@@ -207,6 +207,7 @@ body::before {
   object-fit: contain;
   pointer-events: none;
   opacity: 0;
+  visibility: hidden;
   mix-blend-mode: multiply;
   filter: grayscale(1) sepia(.22) contrast(1.1);
   transform: translate(-50%, -50%) rotate(-3deg);
@@ -238,10 +239,7 @@ body::before {
 
 :root.jojo-unlocked[data-theme='greyscale'] .jojo-aura {
   opacity: .72;
-}
-
-:root[data-theme='jojo'] .jojo-aura {
-  opacity: .18;
+  visibility: visible;
 }
 
 .future-city {
@@ -592,6 +590,10 @@ input:focus {
 
 .theme-swatch--jojo {
   background: linear-gradient(135deg, #8f806c, #d9ccb2);
+}
+
+:root:not(.jojo-unlocked) #jojo-theme-button {
+  display: none;
 }
 
 .shortcut {
