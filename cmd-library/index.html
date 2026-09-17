@@ -62,22 +62,43 @@
           <span class="control-label">Interface theme</span>
           <p class="theme-note">Change the atmosphere of the command deck.</p>
         </div>
-        <div class="theme-options" id="theme-options" role="group" aria-label="Choose a website theme">
-          <button class="theme-button is-active" data-theme="default" type="button"><span
-              class="theme-swatch theme-swatch--default"></span>Terminal green</button>
-          <button class="theme-button" data-theme="greyscale" type="button"><span
-              class="theme-swatch theme-swatch--greyscale"></span>Greyscale glitch</button>
-          <button class="theme-button" data-theme="futurepunk" type="button"><span
-              class="theme-swatch theme-swatch--futurepunk"></span>Future punk</button>
-          <button class="theme-button" data-theme="matrix" type="button"><span
-              class="theme-swatch theme-swatch--matrix"></span>Matrix rain</button>
-          <button class="theme-button" data-theme="halflife" type="button"><span
-              class="theme-swatch theme-swatch--halflife"></span>Half-Life 2</button>
-          <button class="theme-button" data-theme="cry" type="button"><span
-              class="theme-swatch theme-swatch--cry"></span>Cry?</button>
-          <button class="theme-button" data-theme="jojo" id="jojo-theme-button" type="button" hidden><span
-              class="theme-swatch theme-swatch--jojo"></span>JOJO</button>
+        <div class="theme-picker">
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-expanded="false"
+            aria-controls="theme-options">Choose theme</button>
+          <div class="theme-options" id="theme-options" role="group" aria-label="Choose a website theme" hidden>
+            <button class="theme-button is-active" data-theme="default" type="button"><span
+                class="theme-swatch theme-swatch--default"></span>Terminal green</button>
+            <button class="theme-button" data-theme="greyscale" type="button"><span
+                class="theme-swatch theme-swatch--greyscale"></span>Greyscale glitch</button>
+            <button class="theme-button" data-theme="futurepunk" type="button"><span
+                class="theme-swatch theme-swatch--futurepunk"></span>Future punk</button>
+            <button class="theme-button" data-theme="matrix" type="button"><span
+                class="theme-swatch theme-swatch--matrix"></span>Matrix rain</button>
+            <button class="theme-button" data-theme="halflife" type="button"><span
+                class="theme-swatch theme-swatch--halflife"></span>Half-Life 2</button>
+            <button class="theme-button" data-theme="cry" type="button"><span
+                class="theme-swatch theme-swatch--cry"></span>Cry?</button>
+            <button class="theme-button" data-theme="jojo" id="jojo-theme-button" type="button" hidden><span
+                class="theme-swatch theme-swatch--jojo"></span>JOJO</button>
+            <button class="theme-button" data-theme="silversurfer" type="button"><span
+                class="theme-swatch theme-swatch--silversurfer"></span>Silver Surfer</button>
+          </div>
         </div>
+      </section>
+
+      <section class="silver-audio" id="silver-audio" aria-label="Silver Surfer audio" hidden>
+        <div>
+          <span class="control-label">Silver Surfer audio</span>
+          <p class="theme-note">Asleep in Space / optional soundtrack.</p>
+        </div>
+        <div class="audio-controls">
+          <button class="audio-button" id="audio-play" type="button">PLAY</button>
+          <button class="audio-button" id="audio-pause" type="button">PAUSE</button>
+          <button class="audio-button" id="audio-stop" type="button">STOP</button>
+        </div>
+        <iframe id="silver-surfer-player"
+          src="https://www.youtube.com/embed/2n5Djx-yW6c?enablejsapi=1&controls=0&playsinline=1"
+          title="Asleep in Space audio player" allow="autoplay; encrypted-media" loading="lazy"></iframe>
       </section>
 
       <section class="library-heading" aria-labelledby="library-title">

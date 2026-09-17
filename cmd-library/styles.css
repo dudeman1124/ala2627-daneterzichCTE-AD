@@ -144,6 +144,32 @@
     var(--bg);
 }
 
+:root[data-theme='silversurfer'] {
+  --ink: #f4f6f8;
+  --muted: #aeb5bc;
+  --faint: #6f7881;
+  --bg: #030405;
+  --panel: #0d1013;
+  --panel-bright: #171b1f;
+  --line: #626b73;
+  --acid: #edf1f4;
+  --aqua: #b8c1c8;
+  --orange: #d8dee3;
+  --danger: #9da7af;
+  --grid-line: rgba(220, 228, 235, .07);
+  --glow: rgba(220, 228, 235, .12);
+  --command-bg: #050607;
+  --font-body: 'GorDIN', monospace;
+  --font-mono: 'GorDIN', monospace;
+}
+
+:root[data-theme='silversurfer'] body {
+  background:
+    linear-gradient(rgba(3, 4, 5, .72), rgba(3, 4, 5, .9)),
+    url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPYGGvH-FYexa6eAZVFJM7NrNvCLWlj4As9XhIHSjDlg&s=10') center / cover fixed,
+    var(--bg);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -525,6 +551,31 @@ input:focus {
   border-bottom: 1px solid var(--line);
 }
 
+.theme-picker {
+  position: relative;
+  min-width: 13rem;
+}
+
+.theme-toggle {
+  width: 100%;
+  padding: .65rem .8rem;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  font: .7rem var(--font-mono);
+  text-align: left;
+}
+
+.theme-toggle::after {
+  float: right;
+  content: '▾';
+}
+
+.theme-toggle[aria-expanded='true']::after {
+  content: '▴';
+}
+
 .theme-note {
   margin: -.35rem 0 0;
   color: var(--faint);
@@ -532,10 +583,17 @@ input:focus {
 }
 
 .theme-options {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: end;
-  gap: .45rem;
+  position: absolute;
+  top: calc(100% + .4rem);
+  right: 0;
+  z-index: 4;
+  display: grid;
+  min-width: 100%;
+  gap: .3rem;
+  padding: .4rem;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 .8rem 2rem rgba(0, 0, 0, .35);
 }
 
 .theme-button {
@@ -592,8 +650,50 @@ input:focus {
   background: linear-gradient(135deg, #8f806c, #d9ccb2);
 }
 
+.theme-swatch--silversurfer {
+  background: linear-gradient(135deg, #050607 50%, #e4e8eb 50%);
+}
+
 :root:not(.jojo-unlocked) #jojo-theme-button {
   display: none;
+}
+
+.silver-audio {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: .8rem 2rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.audio-controls {
+  display: flex;
+  gap: .4rem;
+}
+
+.audio-button {
+  padding: .5rem .7rem;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  font: .65rem var(--font-mono);
+}
+
+.audio-button:hover,
+.audio-button:focus-visible {
+  border-color: var(--acid);
+  background: var(--panel-bright);
+}
+
+.silver-audio iframe {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .shortcut {

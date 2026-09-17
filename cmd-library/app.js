@@ -43,6 +43,9 @@ const resultCount = document.querySelector('#result-count');
 const pageNote = document.querySelector('#page-note');
 const pageButtons = document.querySelector('#page-buttons');
 const themeOptions = document.querySelector('#theme-options');
+const themeToggle = document.querySelector('#theme-toggle');
+const silverAudio = document.querySelector('#silver-audio');
+const silverSurferPlayer = document.querySelector('#silver-surfer-player');
 const matrixCanvas = document.querySelector('#matrix-rain');
 const matrixContext = matrixCanvas.getContext('2d');
 const glitchCanvas = document.querySelector('#glitch-background');
@@ -228,6 +231,20 @@ function setTheme(theme) {
   setMatrixState(theme === 'matrix');
   setGlitchState(theme === 'greyscale');
   setRickState(theme === 'default');
+  silverAudio.hidden = theme !== 'silversurfer';
+}
+
+function setThemeListOpen(isOpen) {
+  themeOptions.hidden = !isOpen;
+  themeToggle.setAttribute('aria-expanded', String(isOpen));
+}
+
+function sendYouTubeCommand(command) {
+  silverSurferPlayer.contentWindow.postMessage(JSON.stringify({
+    event: 'command',
+    func: command,
+    args: []
+  }), '*');
 }
 
 function pointIsNearSegment(pointX, pointY, startX, startY, endX, endY, distance) {
@@ -366,12 +383,23 @@ document.addEventListener('keydown', (event) => {
 
 themeOptions.addEventListener('click', (event) => {
   const button = event.target.closest('[data-theme]');
-  if (button) setTheme(button.dataset.theme);
+  if (!button) return;
+  setTheme(button.dataset.theme);
+  setThemeListOpen(false);
 });
+
+themeToggle.addEventListener('click', () => {
+  setThemeListOpen(themeOptions.hidden);
+});
+
+document.querySelector('#audio-play').addEventListener('click', () => sendYouTubeCommand('playVideo'));
+document.querySelector('#audio-pause').addEventListener('click', () => sendYouTubeCommand('pauseVideo'));
+document.querySelector('#audio-stop').addEventListener('click', () => sendYouTubeCommand('stopVideo'));
 
 render();
 setJojoUnlocked(jojoUnlocked);
 setTheme(localStorage.getItem('cmd-library-theme') || 'default');
+setThemeListOpen(false);
 loadRickStream().then(() => setRickState(document.documentElement.dataset.theme === 'default'));
 resizeMatrix();
 resizeGlitch();
