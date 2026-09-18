@@ -42,111 +42,126 @@
       </div>
       <div class="intro-row">
         <p class="intro">A field guide to what Windows can reveal, inspect, automate, and organize from a normal user
-          account.</p>
-        <p class="boundary"><strong>Scope note</strong><br>Access still depends on your account, device policy, and the
-          target resource. Nothing here bypasses permissions.</p>
-      </div>
-    </header>
-
-    <main>
-      <section class="control-deck" aria-label="Library controls">
-        <div class="search-wrap">
-          <label for="command-search">Search commands</label>
-          <input id="command-search" type="search" placeholder="Try: network, process, files..." autocomplete="off">
-          <span class="shortcut">/</span>
-        </div>
-        <div class="filter-block">
-          <span class="control-label">Filter by domain</span>
-          <div class="filters" id="filters" role="list">
-            <button class="filter-button is-active" data-filter="all" type="button">All <span>18</span></button>
-            <button class="filter-button" data-filter="discover" type="button">Discover <span>5</span></button>
-            <button class="filter-button" data-filter="files" type="button">Files <span>4</span></button>
-            <button class="filter-button" data-filter="network" type="button">Network <span>4</span></button>
-            <button class="filter-button" data-filter="automate" type="button">Automate <span>5</span></button>
+        <div class="language-panel">
+          <div class="language-list">
+            <p class="list-label">COMMAND TYPE</p>
+            <div class="language-switch" aria-label="Choose command language" role="group">
+              <button class="language-button is-active" id="cmd-mode" type="button" aria-pressed="true">CMD
+                Prompt</button>
+              <button class="language-button language-button--python" id="python-mode" type="button"
+                aria-pressed="false">
+                <img
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTH8MiTUjoZ6pQ1jCaKFcYXdODAVL1vPefK8YA1rIUYEg&s"
+                  alt="Python scripts">
+                <span>Python</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
-
-      <section class="theme-bar" aria-label="Website themes">
-        <div>
-          <span class="control-label">Interface theme</span>
-          <p class="theme-note">Change the atmosphere of the command deck.</p>
-        </div>
-        <div class="theme-picker">
-          <button class="theme-toggle" id="theme-toggle" type="button" aria-expanded="false"
-            aria-controls="theme-options">Choose theme</button>
-          <div class="theme-options" id="theme-options" role="group" aria-label="Choose a website theme" hidden>
-            <button class="theme-button is-active" data-theme="default" type="button"><span
-                class="theme-swatch theme-swatch--default"></span>Terminal green</button>
-            <button class="theme-button" data-theme="greyscale" type="button"><span
-                class="theme-swatch theme-swatch--greyscale"></span>Greyscale glitch</button>
-            <button class="theme-button" data-theme="futurepunk" type="button"><span
-                class="theme-swatch theme-swatch--futurepunk"></span>Future punk</button>
-            <button class="theme-button" data-theme="matrix" type="button"><span
-                class="theme-swatch theme-swatch--matrix"></span>Matrix rain</button>
-            <button class="theme-button" data-theme="halflife" type="button"><span
-                class="theme-swatch theme-swatch--halflife"></span>Half-Life 2</button>
-            <button class="theme-button" data-theme="cry" type="button"><span
-                class="theme-swatch theme-swatch--cry"></span>Cry?</button>
-            <button class="theme-button" data-theme="jojo" id="jojo-theme-button" type="button" hidden><span
-                class="theme-swatch theme-swatch--jojo"></span>JOJO</button>
-            <button class="theme-button" data-theme="silversurfer" type="button"><span
-                class="theme-swatch theme-swatch--silversurfer"></span>Silver Surfer</button>
+          <div class="javascript-list">
+            <p class="list-label">JAVASCRIPT CODE</p>
+            <ol class="level-list">
+              <li><span>01</span> Beginner</li>
+              <li><span>02</span> Intermediate</li>
+              <li><span>03</span> Advanced</li>
+            </ol>
           </div>
-        </div>
-      </section>
+          <div class="search-wrap">
+            <label for="command-search">Search commands</label>
+            <input id="command-search" type="search" placeholder="Try: network, process, files..." autocomplete="off">
+            <span class="shortcut">/</span>
+          </div>
+          <div class="filter-block">
+            <span class="control-label">Filter by domain</span>
+            <div class="filters" id="filters" role="list">
+              <button class="filter-button is-active" data-filter="all" type="button">All <span>18</span></button>
+              <button class="filter-button" data-filter="discover" type="button">Discover <span>5</span></button>
+              <button class="filter-button" data-filter="files" type="button">Files <span>4</span></button>
+              <button class="filter-button" data-filter="network" type="button">Network <span>4</span></button>
+              <button class="filter-button" data-filter="automate" type="button">Automate <span>5</span></button>
+            </div>
+          </div>
+          </section>
 
-      <section class="silver-audio" id="silver-audio" aria-label="Silver Surfer audio" hidden>
-        <div>
-          <span class="control-label">Silver Surfer audio</span>
-          <p class="theme-note">Asleep in Space / optional soundtrack.</p>
-        </div>
-        <div class="audio-controls">
-          <button class="audio-button" id="audio-play" type="button">PLAY</button>
-          <button class="audio-button" id="audio-pause" type="button">PAUSE</button>
-          <button class="audio-button" id="audio-stop" type="button">STOP</button>
-        </div>
-        <iframe id="silver-surfer-player"
-          src="https://www.youtube.com/embed/2n5Djx-yW6c?enablejsapi=1&controls=0&playsinline=1"
-          title="Asleep in Space audio player" allow="autoplay; encrypted-media" loading="lazy"></iframe>
-      </section>
+          <section class="theme-bar" aria-label="Website themes">
+            <div>
+              <span class="control-label">Interface theme</span>
+              <p class="theme-note">Change the atmosphere of the command deck.</p>
+            </div>
+            <div class="theme-picker">
+              <button class="theme-toggle" id="theme-toggle" type="button" aria-expanded="false"
+                aria-controls="theme-options">Choose theme</button>
+              <div class="theme-options" id="theme-options" role="group" aria-label="Choose a website theme" hidden>
+                <button class="theme-button is-active" data-theme="default" type="button"><span
+                    class="theme-swatch theme-swatch--default"></span>Terminal green</button>
+                <button class="theme-button" data-theme="greyscale" type="button"><span
+                    class="theme-swatch theme-swatch--greyscale"></span>Greyscale glitch</button>
+                <button class="theme-button" data-theme="futurepunk" type="button"><span
+                    class="theme-swatch theme-swatch--futurepunk"></span>Future punk</button>
+                <button class="theme-button" data-theme="matrix" type="button"><span
+                    class="theme-swatch theme-swatch--matrix"></span>Matrix rain</button>
+                <button class="theme-button" data-theme="halflife" type="button"><span
+                    class="theme-swatch theme-swatch--halflife"></span>Half-Life 2</button>
+                <button class="theme-button" data-theme="cry" type="button"><span
+                    class="theme-swatch theme-swatch--cry"></span>Cry?</button>
+                <button class="theme-button" data-theme="jojo" id="jojo-theme-button" type="button" hidden><span
+                    class="theme-swatch theme-swatch--jojo"></span>JOJO</button>
+                <button class="theme-button" data-theme="silversurfer" type="button"><span
+                    class="theme-swatch theme-swatch--silversurfer"></span>Silver Surfer</button>
+              </div>
+            </div>
+          </section>
 
-      <section class="library-heading" aria-labelledby="library-title">
-        <div>
-          <p class="section-label">INDEX / 00<span id="result-count">18</span></p>
-          <h2 id="library-title">The standard-user toolkit</h2>
-        </div>
-        <p class="sort-note">Click any command to copy<br><span>Paste into PowerShell to inspect it.</span></p>
-      </section>
+          <section class="silver-audio" id="silver-audio" aria-label="Silver Surfer audio" hidden>
+            <div>
+              <span class="control-label">Silver Surfer audio</span>
+              <p class="theme-note">Asleep in Space / optional soundtrack.</p>
+            </div>
+            <div class="audio-controls">
+              <button class="audio-button" id="audio-play" type="button">PLAY</button>
+              <button class="audio-button" id="audio-pause" type="button">PAUSE</button>
+              <button class="audio-button" id="audio-stop" type="button">STOP</button>
+            </div>
+            <iframe id="silver-surfer-player"
+              src="https://www.youtube.com/embed/2n5Djx-yW6c?enablejsapi=1&controls=0&playsinline=1"
+              title="Asleep in Space audio player" allow="autoplay; encrypted-media" loading="lazy"></iframe>
+          </section>
 
-      <section class="command-grid" id="command-grid" aria-live="polite"></section>
-      <p class="empty-state" id="empty-state" hidden>No commands match that signal. Try a broader search.</p>
-      <nav class="pagination" id="pagination" aria-label="Command difficulty pages">
-        <div>
-          <p class="section-label">PROGRESSION</p>
-          <p class="pagination-note" id="page-note">Foundations / everyday inspection</p>
-        </div>
-        <div class="page-buttons" id="page-buttons" role="list"></div>
-      </nav>
+          <section class="library-heading" aria-labelledby="library-title">
+            <div>
+              <p class="section-label">INDEX / 00<span id="result-count">18</span></p>
+              <h2 id="library-title">The standard-user toolkit</h2>
+            </div>
+            <p class="sort-note">Click any command to copy<br><span>Paste into PowerShell to inspect it.</span></p>
+          </section>
 
-      <section class="workflow-band">
-        <div>
-          <p class="section-label">FIELD NOTES / 03</p>
-          <h2>Use the shell like a lens.</h2>
-        </div>
-        <div class="workflow-copy">
-          <p>Start with observation: identify the machine, inspect a process, map a folder, test a connection. Then
-            compose small commands with pipes and filters.</p>
-          <code>Get-Process | Where-Object CPU -gt 60 | Sort-Object CPU -Descending</code>
-        </div>
-      </section>
-    </main>
+          <section class="command-grid" id="command-grid" aria-live="polite"></section>
+          <p class="empty-state" id="empty-state" hidden>No commands match that signal. Try a broader search.</p>
+          <nav class="pagination" id="pagination" aria-label="Command difficulty pages">
+            <div>
+              <p class="section-label">PROGRESSION</p>
+              <p class="pagination-note" id="page-note">Foundations / everyday inspection</p>
+            </div>
+            <div class="page-buttons" id="page-buttons" role="list"></div>
+          </nav>
 
-    <footer>
-      <p><span>CMD-LIBRARY</span> // Built for learning, troubleshooting, and everyday automation.</p>
-      <p>Permission is a boundary, not a puzzle to defeat.</p>
-    </footer>
-  </div>
+          <section class="workflow-band">
+            <div>
+              <p class="section-label">FIELD NOTES / 03</p>
+              <h2>Use the shell like a lens.</h2>
+            </div>
+            <div class="workflow-copy">
+              <p>Start with observation: identify the machine, inspect a process, map a folder, test a connection. Then
+                compose small commands with pipes and filters.</p>
+              <code>Get-Process | Where-Object CPU -gt 60 | Sort-Object CPU -Descending</code>
+            </div>
+          </section>
+          </main>
+
+          <footer>
+            <p><span>CMD-LIBRARY</span> // Built for learning, troubleshooting, and everyday automation.</p>
+            <p>Permission is a boundary, not a puzzle to defeat.</p>
+          </footer>
+        </div>
 </body>
 
 </html>

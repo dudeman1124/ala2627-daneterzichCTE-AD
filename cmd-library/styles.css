@@ -470,17 +470,33 @@ h1 {
   gap: 1.5rem;
 }
 
+.language-panel {
+  display: flex;
+  align-items: end;
+  gap: 1.5rem;
+  margin-bottom: .35rem;
+}
+
+.list-label {
+  margin: 0 0 .45rem;
+  color: var(--orange);
+  font: .62rem var(--font-mono);
+  letter-spacing: .1em;
+}
+
 .language-switch {
   display: flex;
+  flex-direction: column;
   gap: .35rem;
-  margin-bottom: .35rem;
 }
 
 .language-button {
   display: grid;
-  width: 4.2rem;
-  height: 3rem;
-  place-items: center;
+  width: 9.5rem;
+  min-height: 2.25rem;
+  grid-template-columns: 1.5rem 1fr;
+  align-items: center;
+  gap: .55rem;
   padding: .35rem;
   border: 1px solid var(--line);
   border-radius: 0;
@@ -498,10 +514,39 @@ h1 {
 }
 
 .language-button--python img {
-  width: 100%;
-  height: 100%;
+  width: 1.25rem;
+  height: 1.25rem;
   object-fit: contain;
   filter: grayscale(1) contrast(1.25);
+}
+
+.language-button--python span {
+  text-align: left;
+}
+
+.level-list {
+  display: grid;
+  gap: .35rem;
+  min-width: 10rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font: .68rem var(--font-mono);
+  text-transform: uppercase;
+}
+
+.level-list li {
+  display: flex;
+  gap: .55rem;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: .35rem .55rem;
+  border: 1px solid var(--line);
+}
+
+.level-list span {
+  color: var(--faint);
 }
 
 :root[data-theme='matrix'] h1 {
@@ -1298,6 +1343,13 @@ footer span {
   }
 
   .language-switch {
+    margin-bottom: 0;
+  }
+
+  .language-panel {
+    align-items: start;
+    flex-direction: column;
+    gap: 1rem;
     margin-bottom: 0;
   }
 
