@@ -56,6 +56,34 @@ const pythonCommands = [
   { page: 3, name: 'Concurrent Work', category: 'advanced', label: 'Advanced', description: 'Schedule independent tasks and collect their results together.', command: 'from concurrent.futures import ThreadPoolExecutor\n\nwith ThreadPoolExecutor() as pool:\n    results = list(pool.map(str.upper, ["one", "two"]))' }
 ];
 
+const javascriptCommands = [
+  { page: 1, name: 'Variables', category: 'foundation', label: 'Foundation', description: 'Store values with clear names using modern JavaScript declarations.', command: 'const name = "Ada";\nconsole.log(name);' },
+  { page: 1, name: 'Arrays', category: 'foundation', label: 'Foundation', description: 'Keep an ordered collection and access one item by its position.', command: 'const colors = ["red", "green", "blue"];\nconsole.log(colors[0]);' },
+  { page: 1, name: 'Objects', category: 'foundation', label: 'Foundation', description: 'Represent related values with readable key-value pairs.', command: 'const user = { name: "Ada", active: true };\nconsole.log(user.name);' },
+  { page: 1, name: 'Conditions', category: 'foundation', label: 'Foundation', description: 'Choose a path when a value meets a condition.', command: 'const temperature = 72;\nif (temperature > 70) console.log("Warm");' },
+  { page: 1, name: 'Loops', category: 'foundation', label: 'Foundation', description: 'Repeat an action for every item in a collection.', command: 'for (const number of [1, 2, 3]) {\n  console.log(number);\n}' },
+  { page: 1, name: 'Functions', category: 'foundation', label: 'Foundation', description: 'Package a repeatable action behind a descriptive name.', command: 'function greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet("Ada"));' },
+  { page: 2, name: 'Array Mapping', category: 'intermediate', label: 'Intermediate', description: 'Build a transformed array with a readable expression.', command: 'const squares = [1, 2, 3, 4, 5].map(number => number ** 2);' },
+  { page: 2, name: 'Fetch Data', category: 'intermediate', label: 'Intermediate', description: 'Request JSON data from a web service with the Fetch API.', command: 'const response = await fetch("https://example.com/data.json");\nconst data = await response.json();' },
+  { page: 2, name: 'Handle Errors', category: 'intermediate', label: 'Intermediate', description: 'Catch expected failures and give the caller a useful result.', command: 'try {\n  JSON.parse(input);\n} catch (error) {\n  console.error("Invalid JSON", error);\n}' },
+  { page: 2, name: 'Classes', category: 'intermediate', label: 'Intermediate', description: 'Model structured records with reusable behavior.', command: 'class Task {\n  constructor(title) {\n    this.title = title;\n    this.done = false;\n  }\n}' },
+  { page: 2, name: 'JSON Data', category: 'intermediate', label: 'Intermediate', description: 'Convert between JavaScript objects and portable JSON text.', command: 'const payload = { status: "ok" };\nconst text = JSON.stringify(payload);\nconsole.log(JSON.parse(text).status);' },
+  { page: 2, name: 'Filter Items', category: 'intermediate', label: 'Intermediate', description: 'Keep only collection items that match a condition.', command: 'const activeUsers = users.filter(user => user.active);' },
+  { page: 3, name: 'Async Task', category: 'advanced', label: 'Advanced', description: 'Run waiting work cooperatively with async JavaScript syntax.', command: 'async function main() {\n  await new Promise(resolve => setTimeout(resolve, 1000));\n  console.log("Finished");\n}\n\nmain();' },
+  { page: 3, name: 'Read a File', category: 'advanced', label: 'Advanced', description: 'Read text from a file with the Node.js standard library.', command: 'import { readFile } from "node:fs/promises";\n\nconst text = await readFile("notes.txt", "utf8");' },
+  { page: 3, name: 'Web Server', category: 'advanced', label: 'Advanced', description: 'Create a small HTTP server with the Node.js runtime.', command: 'import { createServer } from "node:http";\n\ncreateServer((request, response) => {\n  response.end("Hello");\n}).listen(3000);' },
+  { page: 3, name: 'Map Values', category: 'advanced', label: 'Advanced', description: 'Associate keys with values when an object is not enough.', command: 'const visits = new Map();\nvisits.set("home", 3);\nconsole.log(visits.get("home"));' },
+  { page: 3, name: 'Promise Work', category: 'advanced', label: 'Advanced', description: 'Run independent asynchronous operations together.', command: 'const [users, posts] = await Promise.all([\n  fetch("/users").then(response => response.json()),\n  fetch("/posts").then(response => response.json())\n]);' },
+  { page: 3, name: 'Regular Expression', category: 'advanced', label: 'Advanced', description: 'Find and validate text patterns with a reusable expression.', command: 'const emailPattern = /^[^@]+@[^@]+\\.[^@]+$/;\nconsole.log(emailPattern.test("ada@example.com"));' },
+  { page: 4, name: 'Proxy Trap', category: 'hell', label: 'Hell', description: 'Intercept object behavior and enforce rules at runtime.', command: 'const guarded = new Proxy({}, {\n  set(target, key, value) {\n    if (typeof value !== "number") throw new TypeError("Numbers only");\n    target[key] = value;\n    return true;\n  }\n});' },
+  { page: 4, name: 'Generator Pipeline', category: 'hell', label: 'Hell', description: 'Build a lazy data pipeline that transforms values only when consumed.', command: 'function* double(values) {\n  for (const value of values) yield value * 2;\n}\n\nconsole.log([...double([1, 2, 3])]);' },
+  { page: 4, name: 'Custom Iterator', category: 'hell', label: 'Hell', description: 'Teach an object how to participate in JavaScript iteration protocols.', command: 'const countdown = {\n  *[Symbol.iterator]() {\n    for (let value = 3; value > 0; value -= 1) yield value;\n  }\n};' },
+  { page: 5, name: 'Worker Threads', category: 'uberhell', label: 'UBERHELL', description: 'Move CPU-heavy work off the main thread with a Node.js worker.', command: 'import { Worker } from "node:worker_threads";\n\nconst worker = new Worker(new URL("./worker.js", import.meta.url));\nworker.on("message", console.log);' },
+  { page: 5, name: 'Async Iterator', category: 'uberhell', label: 'UBERHELL', description: 'Consume an asynchronous stream one result at a time with backpressure.', command: 'for await (const chunk of response.body) {\n  process.stdout.write(chunk);\n}' },
+  { page: 5, name: 'Tagged Template', category: 'uberhell', label: 'UBERHELL', description: 'Parse template literals with a custom function before producing output.', command: 'function sql(strings, ...values) {\n  return strings.reduce((query, text, index) =>\n    `${query}${text}${values[index] ?? ""}`, "");\n}' },
+  { page: 5, name: 'Reflective Metaprogramming', category: 'uberhell', label: 'UBERHELL', description: 'Combine reflection and proxies to create a fully instrumented API surface.', command: 'const traced = new Proxy(api, {\n  get(target, key, receiver) {\n    console.log("read", String(key));\n    return Reflect.get(target, key, receiver);\n  }\n});' }
+];
+
 const grid = document.querySelector('#command-grid');
 const search = document.querySelector('#command-search');
 const filters = document.querySelector('#filters');
@@ -66,6 +94,7 @@ const pageButtons = document.querySelector('#page-buttons');
 const libraryTitle = document.querySelector('#library-title');
 const cmdMode = document.querySelector('#cmd-mode');
 const pythonMode = document.querySelector('#python-mode');
+const javascriptMode = document.querySelector('#javascript-mode');
 const themeOptions = document.querySelector('#theme-options');
 const themeToggle = document.querySelector('#theme-toggle');
 const silverAudio = document.querySelector('#silver-audio');
@@ -91,14 +120,24 @@ const pythonPageNames = {
   2: 'Intermediate / reusable programs',
   3: 'Advanced / automation and systems'
 };
+const javascriptPageNames = {
+  1: 'Beginner / syntax and data',
+  2: 'Intermediate / reusable programs',
+  3: 'Advanced / automation and systems',
+  4: 'Hell / runtime wizardry',
+  5: 'UBERHELL / language machinery'
+};
 const filterNames = {
   cmd: { all: 'All', discover: 'Discover', files: 'Files', network: 'Network', automate: 'Automate' },
-  python: { all: 'All', foundation: 'Foundational', intermediate: 'Intermediate', advanced: 'Advanced' }
+  python: { all: 'All', foundation: 'Foundational', intermediate: 'Intermediate', advanced: 'Advanced' },
+  javascript: { all: 'All', foundation: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', hell: 'Hell', uberhell: 'UBERHELL' }
 };
 const filterKeys = {
   cmd: ['all', 'discover', 'files', 'network', 'automate'],
-  python: ['all', 'foundation', 'intermediate', 'advanced']
+  python: ['all', 'foundation', 'intermediate', 'advanced'],
+  javascript: ['all', 'foundation', 'intermediate', 'advanced', 'hell', 'uberhell']
 };
+const pageCounts = { cmd: 3, python: 3, javascript: 5 };
 let matrixAnimation;
 let glitchAnimation;
 let rickAnimation;
@@ -357,8 +396,12 @@ window.addEventListener('pagehide', () => setJojoUnlocked(false));
 
 function render() {
   const query = search.value.trim().toLowerCase();
-  const currentCommands = activeMode === 'python' ? pythonCommands : commands;
-  const currentPageNames = activeMode === 'python' ? pythonPageNames : pageNames;
+  const currentCommands = activeMode === 'cmd'
+    ? commands
+    : activeMode === 'python' ? pythonCommands : javascriptCommands;
+  const currentPageNames = activeMode === 'cmd'
+    ? pageNames
+    : activeMode === 'python' ? pythonPageNames : javascriptPageNames;
   const pageCommands = currentCommands.filter((item) => item.page === activePage);
   filters.querySelectorAll('.filter-button').forEach((button, index) => {
     const filter = filterKeys[activeMode][index];
@@ -380,7 +423,7 @@ function render() {
   resultCount.textContent = String(visible.length).padStart(2, '0');
   emptyState.hidden = visible.length > 0;
   pageNote.textContent = currentPageNames[activePage];
-  pageButtons.innerHTML = [1, 2, 3].map((page) => `
+  pageButtons.innerHTML = Array.from({ length: pageCounts[activeMode] }, (_, index) => index + 1).map((page) => `
     <button class="page-button${page === activePage ? ' is-active' : ''}" data-page="${page}" type="button" aria-current="${page === activePage ? 'page' : 'false'}">
       <span>0${page}</span>${currentPageNames[page].split(' / ')[0]}
     </button>
@@ -407,18 +450,24 @@ function setCommandMode(mode) {
   activeMode = mode;
   activeFilter = 'all';
   activePage = 1;
-  const isPython = mode === 'python';
-  cmdMode.classList.toggle('is-active', !isPython);
-  pythonMode.classList.toggle('is-active', isPython);
-  cmdMode.setAttribute('aria-pressed', String(!isPython));
-  pythonMode.setAttribute('aria-pressed', String(isPython));
-  libraryTitle.textContent = isPython ? 'The Python code toolkit' : 'The standard-user toolkit';
-  search.placeholder = isPython ? 'Try: lists, files, async...' : 'Try: network, process, files...';
+  const modes = { cmd: cmdMode, python: pythonMode, javascript: javascriptMode };
+  Object.entries(modes).forEach(([name, button]) => {
+    const isActive = name === mode;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-pressed', String(isActive));
+  });
+  libraryTitle.textContent = mode === 'cmd'
+    ? 'The standard-user toolkit'
+    : `The ${mode === 'python' ? 'Python' : 'JavaScript'} code toolkit`;
+  search.placeholder = mode === 'cmd'
+    ? 'Try: network, process, files...'
+    : 'Try: arrays, files, async...';
   render();
 }
 
 cmdMode.addEventListener('click', () => setCommandMode('cmd'));
 pythonMode.addEventListener('click', () => setCommandMode('python'));
+javascriptMode.addEventListener('click', () => setCommandMode('javascript'));
 
 pageButtons.addEventListener('click', (event) => {
   const button = event.target.closest('[data-page]');
