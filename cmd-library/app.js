@@ -84,6 +84,27 @@ const javascriptCommands = [
   { page: 5, name: 'Reflective Metaprogramming', category: 'uberhell', label: 'UBERHELL', description: 'Combine reflection and proxies to create a fully instrumented API surface.', command: 'const traced = new Proxy(api, {\n  get(target, key, receiver) {\n    console.log("read", String(key));\n    return Reflect.get(target, key, receiver);\n  }\n});' }
 ];
 
+const assemblyCommands = [
+  { page: 1, name: 'Move Data', category: 'foundation', label: 'Foundation', description: 'Copy an immediate value into a register, the basic move of assembly programming.', command: 'mov eax, 42\nmov ebx, eax' },
+  { page: 1, name: 'Add Values', category: 'foundation', label: 'Foundation', description: 'Add two register values and keep the result in the destination register.', command: 'mov eax, 7\nadd eax, 5' },
+  { page: 1, name: 'Compare', category: 'foundation', label: 'Foundation', description: 'Compare values so a later jump can choose a different path.', command: 'cmp eax, ebx\nje values_equal' },
+  { page: 1, name: 'Stack Basics', category: 'foundation', label: 'Foundation', description: 'Save and restore register values with the call stack.', command: 'push rax\ncall do_work\npop rax' },
+  { page: 1, name: 'Labels', category: 'foundation', label: 'Foundation', description: 'Name an instruction address and jump back to it for a loop.', command: 'loop_start:\n  dec ecx\n  jnz loop_start' },
+  { page: 1, name: 'Return Value', category: 'foundation', label: 'Foundation', description: 'Return a small integer from a function using the platform calling convention.', command: 'mov eax, 0\nret' },
+  { page: 2, name: 'Function Call', category: 'intermediate', label: 'Intermediate', description: 'Set up a call frame and preserve registers across a reusable routine.', command: 'push rbp\nmov rbp, rsp\ncall calculate\nleave\nret' },
+  { page: 2, name: 'Memory Access', category: 'intermediate', label: 'Intermediate', description: 'Read and write values through a pointer stored in a register.', command: 'mov rax, [rdi]\nadd rax, 1\nmov [rdi], rax' },
+  { page: 2, name: 'Array Loop', category: 'intermediate', label: 'Intermediate', description: 'Walk through an array one element at a time with indexed addressing.', command: 'xor ecx, ecx\n.next:\n  mov eax, [rdi + rcx * 4]\n  inc ecx\n  cmp ecx, esi\n  jl .next' },
+  { page: 2, name: 'Bit Mask', category: 'intermediate', label: 'Intermediate', description: 'Use bitwise operations to inspect and change individual flags.', command: 'test eax, 1\njnz odd_number\nor eax, 0x80' },
+  { page: 2, name: 'System Call', category: 'intermediate', label: 'Intermediate', description: 'Request a kernel service directly through the Linux x86-64 syscall interface.', command: 'mov eax, 60\nxor edi, edi\nsyscall' },
+  { page: 2, name: 'Struct Fields', category: 'intermediate', label: 'Intermediate', description: 'Reach fields inside a packed record by adding known byte offsets.', command: 'mov rax, [rdi + 8]\nmov word [rdi + 16], 1' },
+  { page: 3, name: 'Calling Convention', category: 'advanced', label: 'Advanced', description: 'Pass arguments in registers and return a result without unnecessary memory traffic.', command: 'mov rax, rdi\nadd rax, rsi\nret' },
+  { page: 3, name: 'SIMD Addition', category: 'advanced', label: 'Advanced', description: 'Process multiple numeric values at once with vector registers.', command: 'movups xmm0, [rdi]\naddps xmm0, [rsi]\nmovups [rdx], xmm0' },
+  { page: 3, name: 'Atomic Increment', category: 'advanced', label: 'Advanced', description: 'Update shared memory safely when multiple threads can touch the same counter.', command: 'lock inc dword [counter]\nret' },
+  { page: 3, name: 'Position Independent', category: 'advanced', label: 'Advanced', description: 'Reference nearby data without hard-coding an absolute address.', command: 'lea rdi, [rip + message]\ncall puts' },
+  { page: 3, name: 'Inline Assembly', category: 'advanced', label: 'Advanced', description: 'Expose a precise machine instruction inside a higher-level program.', command: '__asm__ volatile ("rdtsc" : "=a" (low), "=d" (high));' },
+  { page: 3, name: 'Interrupt Table', category: 'advanced', label: 'Advanced', description: 'Understand the low-level entry point used to route processor exceptions.', command: 'lidt [idtr]\nsti\nret' }
+];
+
 const grid = document.querySelector('#command-grid');
 const search = document.querySelector('#command-search');
 const filters = document.querySelector('#filters');
@@ -95,6 +116,7 @@ const libraryTitle = document.querySelector('#library-title');
 const cmdMode = document.querySelector('#cmd-mode');
 const pythonMode = document.querySelector('#python-mode');
 const javascriptMode = document.querySelector('#javascript-mode');
+const assemblyMode = document.querySelector('#assembly-mode');
 const toolkitOptions = document.querySelector('#toolkit-options');
 const toolkitToggle = document.querySelector('#toolkit-toggle');
 const themeOptions = document.querySelector('#theme-options');
@@ -129,17 +151,24 @@ const javascriptPageNames = {
   4: 'Hell / runtime wizardry',
   5: 'UBERHELL / language machinery'
 };
+const assemblyPageNames = {
+  1: 'Foundational / registers and control flow',
+  2: 'Intermediate / memory and functions',
+  3: 'Advanced / systems and performance'
+};
 const filterNames = {
   cmd: { all: 'All', discover: 'Discover', files: 'Files', network: 'Network', automate: 'Automate' },
   python: { all: 'All', foundation: 'Foundational', intermediate: 'Intermediate', advanced: 'Advanced' },
-  javascript: { all: 'All', foundation: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', hell: 'Hell', uberhell: 'UBERHELL' }
+  javascript: { all: 'All', foundation: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', hell: 'Hell', uberhell: 'UBERHELL' },
+  assembly: { all: 'All', foundation: 'Foundational', intermediate: 'Intermediate', advanced: 'Advanced' }
 };
 const filterKeys = {
   cmd: ['all', 'discover', 'files', 'network', 'automate'],
   python: ['all', 'foundation', 'intermediate', 'advanced'],
-  javascript: ['all', 'foundation', 'intermediate', 'advanced', 'hell', 'uberhell']
+  javascript: ['all', 'foundation', 'intermediate', 'advanced', 'hell', 'uberhell'],
+  assembly: ['all', 'foundation', 'intermediate', 'advanced']
 };
-const pageCounts = { cmd: 3, python: 3, javascript: 5 };
+const pageCounts = { cmd: 3, python: 3, javascript: 5, assembly: 3 };
 let matrixAnimation;
 let glitchAnimation;
 let rickAnimation;
@@ -400,10 +429,12 @@ function render() {
   const query = search.value.trim().toLowerCase();
   const currentCommands = activeMode === 'cmd'
     ? commands
-    : activeMode === 'python' ? pythonCommands : javascriptCommands;
+    : activeMode === 'python' ? pythonCommands
+      : activeMode === 'javascript' ? javascriptCommands : assemblyCommands;
   const currentPageNames = activeMode === 'cmd'
     ? pageNames
-    : activeMode === 'python' ? pythonPageNames : javascriptPageNames;
+    : activeMode === 'python' ? pythonPageNames
+      : activeMode === 'javascript' ? javascriptPageNames : assemblyPageNames;
   const pageCommands = currentCommands.filter((item) => item.page === activePage);
   filters.querySelectorAll('.filter-button').forEach((button, index) => {
     const filter = filterKeys[activeMode][index];
@@ -452,7 +483,7 @@ function setCommandMode(mode) {
   activeMode = mode;
   activeFilter = 'all';
   activePage = 1;
-  const modes = { cmd: cmdMode, python: pythonMode, javascript: javascriptMode };
+  const modes = { cmd: cmdMode, python: pythonMode, javascript: javascriptMode, assembly: assemblyMode };
   Object.entries(modes).forEach(([name, button]) => {
     const isActive = name === mode;
     button.classList.toggle('is-active', isActive);
@@ -460,12 +491,13 @@ function setCommandMode(mode) {
   });
   libraryTitle.textContent = mode === 'cmd'
     ? 'The standard-user toolkit'
-    : `The ${mode === 'python' ? 'Python' : 'JavaScript'} code toolkit`;
+    : `The ${mode === 'python' ? 'Python' : mode === 'javascript' ? 'JavaScript' : 'Assembly'} code toolkit`;
   search.placeholder = mode === 'cmd'
     ? 'Try: network, process, files...'
-    : 'Try: arrays, files, async...';
+    : mode === 'assembly' ? 'Try: registers, memory, loops...' : 'Try: arrays, files, async...';
   render();
-  toolkitToggle.textContent = mode === 'cmd' ? 'CMD' : mode === 'python' ? 'Python' : 'JavaScript';
+  toolkitToggle.textContent = mode === 'cmd'
+    ? 'CMD' : mode === 'python' ? 'Python' : mode === 'javascript' ? 'JavaScript' : 'Assembly';
   toolkitOptions.hidden = true;
   toolkitToggle.setAttribute('aria-expanded', 'false');
 }
@@ -473,6 +505,7 @@ function setCommandMode(mode) {
 cmdMode.addEventListener('click', () => setCommandMode('cmd'));
 pythonMode.addEventListener('click', () => setCommandMode('python'));
 javascriptMode.addEventListener('click', () => setCommandMode('javascript'));
+assemblyMode.addEventListener('click', () => setCommandMode('assembly'));
 
 toolkitToggle.addEventListener('click', () => {
   const isOpen = toolkitOptions.hidden;
