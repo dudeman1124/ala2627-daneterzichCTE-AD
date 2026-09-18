@@ -84,14 +84,13 @@
 
   <section class="terminal glass-panel" aria-labelledby="terminal-title">
     <div class="terminal-bar">
-      <p id="terminal-title">Remote console</p>
-      <span aria-hidden="true">ONLINE</span>
+      <p id="terminal-title">ascii.live/rick</p>
+      <span aria-hidden="true">STREAMING</span>
     </div>
-    <a class="terminal-command" href="https://ascii.live/rick" target="_blank" rel="noopener noreferrer">
-      <span class="terminal-prompt" aria-hidden="true">$</span> curl ascii.live/rick
-      <span class="terminal-cursor" aria-hidden="true"></span>
-    </a>
-    <p class="terminal-status">Click the command to open the live ASCII stream.</p>
+    <div class="terminal-command"><span class="terminal-prompt" aria-hidden="true">$</span>ascii.live/rick<span
+        class="terminal-cursor" aria-hidden="true"></span></div>
+    <pre class="rick-output" id="rick-output" aria-label="Animated ASCII stream">Connecting to ascii.live/rick...</pre>
+    <p class="terminal-status">Live ASCII stream / press Ctrl+C to stop</p>
   </section>
 
   <footer class="footer-note">
