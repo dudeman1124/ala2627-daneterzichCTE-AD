@@ -95,6 +95,8 @@ const libraryTitle = document.querySelector('#library-title');
 const cmdMode = document.querySelector('#cmd-mode');
 const pythonMode = document.querySelector('#python-mode');
 const javascriptMode = document.querySelector('#javascript-mode');
+const toolkitOptions = document.querySelector('#toolkit-options');
+const toolkitToggle = document.querySelector('#toolkit-toggle');
 const themeOptions = document.querySelector('#theme-options');
 const themeToggle = document.querySelector('#theme-toggle');
 const silverAudio = document.querySelector('#silver-audio');
@@ -463,11 +465,20 @@ function setCommandMode(mode) {
     ? 'Try: network, process, files...'
     : 'Try: arrays, files, async...';
   render();
+  toolkitToggle.textContent = mode === 'cmd' ? 'CMD' : mode === 'python' ? 'Python' : 'JavaScript';
+  toolkitOptions.hidden = true;
+  toolkitToggle.setAttribute('aria-expanded', 'false');
 }
 
 cmdMode.addEventListener('click', () => setCommandMode('cmd'));
 pythonMode.addEventListener('click', () => setCommandMode('python'));
 javascriptMode.addEventListener('click', () => setCommandMode('javascript'));
+
+toolkitToggle.addEventListener('click', () => {
+  const isOpen = toolkitOptions.hidden;
+  toolkitOptions.hidden = !isOpen;
+  toolkitToggle.setAttribute('aria-expanded', String(isOpen));
+});
 
 pageButtons.addEventListener('click', (event) => {
   const button = event.target.closest('[data-page]');

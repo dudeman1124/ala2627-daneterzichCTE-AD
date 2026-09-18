@@ -31,15 +31,14 @@
       <p class="kicker">PowerShell field guide / 2026</p>
       <div class="title-row">
         <h1>CMD<br><em>LIBRARY</em></h1>
-        <div class="language-switch" aria-label="Choose command language" role="group">
-          <button class="language-button is-active" id="cmd-mode" type="button" aria-pressed="true">CMD</button>
-          <button class="language-button language-button--python" id="python-mode" type="button" aria-pressed="false">
-            <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTH8MiTUjoZ6pQ1jCaKFcYXdODAVL1vPefK8YA1rIUYEg&s"
-              alt="Python scripts">
-          </button>
-          <button class="language-button" id="javascript-mode" type="button" aria-pressed="false"
-            aria-label="JavaScript">JS</button>
+        <div class="toolkit-picker">
+          <button class="toolkit-toggle" id="toolkit-toggle" type="button" aria-expanded="false"
+            aria-controls="toolkit-options">Choose toolkit</button>
+          <div class="toolkit-options" id="toolkit-options" role="group" aria-label="Choose a code toolkit" hidden>
+            <button class="toolkit-button is-active" id="cmd-mode" type="button" aria-pressed="true">CMD</button>
+            <button class="toolkit-button" id="python-mode" type="button" aria-pressed="false">Python</button>
+            <button class="toolkit-button" id="javascript-mode" type="button" aria-pressed="false">JavaScript</button>
+          </div>
         </div>
       </div>
       <div class="intro-row">
