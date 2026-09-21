@@ -17,6 +17,26 @@ const bodies = [
   { id: 'sgr-a', name: 'Sagittarius A*', type: 'black hole', category: 'nearby', color: 0xff7964, diameter: '≈ 24 million km', orbit: 'Galactic center', moons: 'Many orbiting stars', distance: '26,700 ly', description: 'The supermassive black hole at the center of the Milky Way, around which our galaxy turns.', note: 'Its mass is about four million times that of the Sun.', size: 1.7, position: [3, -18, -34], blackHole: true }
 ];
 
+const textureBase = 'https://www.solarsystemscope.com/textures/download/';
+const textureUrls = {
+  sun: `${textureBase}2k_sun.jpg`, mercury: `${textureBase}2k_mercury.jpg`, venus: `${textureBase}2k_venus.jpg`,
+  earth: `${textureBase}2k_earth.jpg`, mars: `${textureBase}2k_mars.jpg`, jupiter: `${textureBase}2k_jupiter.jpg`,
+  saturn: `${textureBase}2k_saturn.jpg`, uranus: `${textureBase}2k_uranus.jpg`, neptune: `${textureBase}2k_neptune.jpg`, moon: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg'
+};
+const planetMotion = {
+  mercury: { semiMajorAU: .387, orbitalDays: 87.969, rotationHours: 1407.6, axialTilt: 0.034 },
+  venus: { semiMajorAU: .723, orbitalDays: 224.701, rotationHours: -5832.5, axialTilt: 177.4 },
+  earth: { semiMajorAU: 1, orbitalDays: 365.256, rotationHours: 23.934, axialTilt: 23.44 },
+  mars: { semiMajorAU: 1.524, orbitalDays: 686.98, rotationHours: 24.623, axialTilt: 25.19 },
+  jupiter: { semiMajorAU: 5.203, orbitalDays: 4332.59, rotationHours: 9.925, axialTilt: 3.13 },
+  saturn: { semiMajorAU: 9.537, orbitalDays: 10759.22, rotationHours: 10.656, axialTilt: 26.73 },
+  uranus: { semiMajorAU: 19.191, orbitalDays: 30688.5, rotationHours: -17.24, axialTilt: 97.77 },
+  neptune: { semiMajorAU: 30.07, orbitalDays: 60182, rotationHours: 16.11, axialTilt: 28.32 }
+};
+const orbitScale = 1.83;
+const daysPerSecond = 365.256 / 12;
+const textureLoader = new THREE.TextureLoader();
+
 const canvas = document.querySelector('#space-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 const scene = new THREE.Scene();
@@ -51,21 +71,24 @@ function makeObject(body) {
     const disk = new THREE.Mesh(new THREE.TorusGeometry(body.size * 1.6, body.size * .3, 12, 48), material(body.color, body.color)); disk.rotation.x = .35; group.add(disk);
     const core = new THREE.Mesh(new THREE.SphereGeometry(body.size, 20, 20), material(0x030303)); group.add(core);
   } else {
-    const sphere = new THREE.Mesh(new THREE.SphereGeometry(body.size, 24, 16), material(body.color, body.id === 'sun' ? body.color : 0x000000)); sphere.userData.body = body; group.add(sphere);
+    const sphereMaterial = material(body.color, body.id === 'sun' ? body.color : 0x000000);
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(body.size, 32, 20), sphereMaterial); sphere.userData.body = body; group.add(sphere);
+    if (textureUrls[body.id]) textureLoader.load(textureUrls[body.id], (texture) => { sphereMaterial.map = texture; sphereMaterial.emissiveMap = body.id === 'sun' ? texture : null; sphereMaterial.needsUpdate = true; });
+    if (planetMotion[body.id]) { group.rotation.z = THREE.MathUtils.degToRad(planetMotion[body.id].axialTilt); group.userData.motion = planetMotion[body.id]; }
     if (body.ring) { const ring = new THREE.Mesh(new THREE.RingGeometry(body.size * 1.35, body.size * 2.2, 48), new THREE.MeshBasicMaterial({ color: 0xd6c497, side: THREE.DoubleSide, transparent: true, opacity: .72 })); ring.rotation.x = Math.PI / 2.5; group.add(ring); }
     if (body.id === 'earth') { const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(body.size * 1.08, 24, 16), new THREE.MeshBasicMaterial({ color: 0x8de4ff, transparent: true, opacity: .16 })); group.add(atmosphere); }
   }
   orbitGroup.add(group); objectMeshes.push(group); return group;
 }
 function makeOrbits() {
-  bodies.filter((body) => body.category === 'planet').forEach((body) => { const ring = new THREE.Mesh(new THREE.RingGeometry(Math.max(4, body.position[0] - 1.2), Math.max(4.03, body.position[0] - 1.1), 128), new THREE.MeshBasicMaterial({ color: 0x596467, side: THREE.DoubleSide, transparent: true, opacity: .28 })); ring.rotation.x = -Math.PI / 2; orbitGroup.add(ring); });
+  Object.values(planetMotion).forEach((motion) => { const radius = motion.semiMajorAU * orbitScale; const ring = new THREE.Mesh(new THREE.RingGeometry(radius - .055, radius + .055, 128), new THREE.MeshBasicMaterial({ color: 0x596467, side: THREE.DoubleSide, transparent: true, opacity: .28 })); ring.rotation.x = -Math.PI / 2; orbitGroup.add(ring); });
 }
-function makeMoons() { bodies.filter((body) => body.moonsList).forEach((body) => body.moonsList.forEach((moonName, index) => { const moon = new THREE.Mesh(new THREE.SphereGeometry(Math.max(.09, body.size * .11), 10, 8), material(0xb8b6ac)); const angle = index * 1.9; moon.position.set(body.position[0] + Math.cos(angle) * (body.size * 2.6 + index * .3), Math.sin(angle * .7) * body.size * .6, Math.sin(angle) * (body.size * 2.6 + index * .3)); moon.userData.body = { name: moonName, type: `${body.name} moon`, category: body.category, color: 0xb8b6ac, diameter: 'Moon in catalogue', orbit: `orbits ${body.name}`, moons: 'None', distance: body.distance, description: `${moonName} is one of the named moons included in the ${body.name} system.`, note: 'Moon sizes and positions are enlarged for visibility.', size: .1, position: [0, 0, 0] }; orbitGroup.add(moon); objectMeshes.push(moon); })); }
+function makeMoons() { bodies.filter((body) => body.moonsList).forEach((body) => body.moonsList.forEach((moonName, index) => { const moonMaterial = material(0xb8b6ac); const moon = new THREE.Mesh(new THREE.SphereGeometry(Math.max(.09, body.size * .11), 12, 8), moonMaterial); const angle = index * 1.9; moon.position.set(Math.cos(angle) * (body.size * 2.6 + index * .3), Math.sin(angle * .7) * body.size * .6, Math.sin(angle) * (body.size * 2.6 + index * .3)); if (moonName === 'Moon') textureLoader.load(textureUrls.moon, (texture) => { moonMaterial.map = texture; moonMaterial.needsUpdate = true; }); moon.userData.body = { name: moonName, type: `${body.name} moon`, category: body.category, color: 0xb8b6ac, diameter: 'Moon in catalogue', orbit: `orbits ${body.name}`, moons: 'None', distance: body.distance, description: `${moonName} is one of the named moons included in the ${body.name} system.`, note: 'Moon sizes and positions are enlarged for visibility.', size: .1, position: [0, 0, 0] }; const parent = objectMeshes.find((mesh) => mesh.userData.body?.id === body.id); (parent || orbitGroup).add(moon); objectMeshes.push(moon); })); }
 function renderCatalogue(filter = 'all') { const list = document.querySelector('#catalogue-list'); list.innerHTML = ''; bodies.filter((body) => filter === 'all' || body.category === filter).forEach((body) => { const button = document.createElement('button'); button.className = `catalogue-item${body.id === selectedBody.id ? ' is-selected' : ''}`; button.style.setProperty('--dot', `#${body.color.toString(16).padStart(6, '0')}`); button.innerHTML = `<span class="item-dot"></span><span class="item-name">${body.name}</span><span class="item-type">${body.type}</span>`; button.addEventListener('click', () => selectBody(body)); list.append(button); }); }
 function selectBody(body) { selectedBody = body; document.querySelector('#detail-type').textContent = body.type.toUpperCase(); document.querySelector('#detail-distance').textContent = body.distance; document.querySelector('#detail-name').textContent = body.name; document.querySelector('#detail-description').textContent = body.description; document.querySelector('#detail-diameter').textContent = body.diameter; document.querySelector('#detail-orbit').textContent = body.orbit; document.querySelector('#detail-moons').textContent = body.moons; document.querySelector('#detail-note').textContent = body.note; renderCatalogue(document.querySelector('.filter-button.is-active').dataset.filter); }
 function resize() { const bounds = canvas.getBoundingClientRect(); renderer.setSize(bounds.width, bounds.height, false); camera.aspect = bounds.width / bounds.height; camera.updateProjectionMatrix(); }
 function updateCamera() { camera.position.set(Math.sin(spin.y) * Math.cos(spin.x) * distance, Math.sin(spin.x) * distance, Math.cos(spin.y) * Math.cos(spin.x) * distance); camera.lookAt(orbitGroup.position); }
-function animate() { requestAnimationFrame(animate); spin.x += (targetSpin.x - spin.x) * .08; spin.y += (targetSpin.y - spin.y) * .08; distance += (targetDistance - distance) * .08; orbitGroup.rotation.y += .0007; updateCamera(); renderer.render(scene, camera); }
+function animate(timestamp = 0) { requestAnimationFrame(animate); spin.x += (targetSpin.x - spin.x) * .08; spin.y += (targetSpin.y - spin.y) * .08; distance += (targetDistance - distance) * .08; const elapsedDays = timestamp / 1000 * daysPerSecond; bodies.filter((body) => planetMotion[body.id]).forEach((body) => { const motion = planetMotion[body.id]; const group = objectMeshes.find((mesh) => mesh.userData.body?.id === body.id); if (!group) return; const orbitalAngle = elapsedDays / motion.orbitalDays * Math.PI * 2; group.position.set(Math.cos(orbitalAngle) * motion.semiMajorAU * orbitScale, 0, Math.sin(orbitalAngle) * motion.semiMajorAU * orbitScale); group.rotation.y = elapsedDays / (motion.rotationHours / 24) * Math.PI * 2; }); updateCamera(); renderer.render(scene, camera); }
 
 scene.background = new THREE.Color(0x07090a); scene.add(new THREE.AmbientLight(0x70838b, .55)); const sunLight = new THREE.PointLight(0xffd58b, 3.8, 180); sunLight.position.set(0, 0, 0); scene.add(sunLight); makeStars(); makeOrbits(); bodies.forEach(makeObject); makeMoons();
 document.querySelector('#object-count').textContent = `${bodies.length} CATALOGUE OBJECTS`; renderCatalogue(); selectBody(selectedBody); resize(); animate();
