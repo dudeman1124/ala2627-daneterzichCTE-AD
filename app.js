@@ -28,6 +28,7 @@ const projectDirectories = new Map([
   ['polytrack-inspiration', 'Polytrack-Inspiration'],
   ['dt-gpt', 'DT-GPT'],
   ['smoke-detector', 'smoke-detector'],
+  ['3d space', '3D Space'],
   ['assignments/01-this-is-me', 'assignments/01-this-is-me']
 ]);
 
