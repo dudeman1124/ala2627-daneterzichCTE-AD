@@ -275,7 +275,7 @@ body::before {
   z-index: 20;
   display: grid;
   place-items: center;
-  background: #000;
+  background: transparent;
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
@@ -291,7 +291,8 @@ body::before {
   width: min(52vmin, 25rem);
   aspect-ratio: 1;
   background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQU964IR0Sv8bXwJbjqLlaMOEbAekSpI7il-A5GbKgZkQ&s=10') center / contain no-repeat;
-  filter: drop-shadow(0 0 2rem rgba(231, 197, 91, .42));
+  filter: none;
+  box-shadow: none;
   transform: scale(.65);
 }
 
