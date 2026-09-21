@@ -252,6 +252,8 @@ const glitchCanvas = document.querySelector('#glitch-background');
 const glitchContext = glitchCanvas.getContext('2d');
 const humanoidHitTarget = document.querySelector('#humanoid-hit-target');
 const jojoThemeButton = document.querySelector('#jojo-theme-button');
+const mahoragaThemeButton = document.querySelector('#mahoraga-theme-button');
+const mahoragaEvent = document.querySelector('#mahoraga-event');
 const rickStream = document.querySelector('#rick-stream');
 const futureCity = document.querySelector('#future-city');
 let activeFilter = 'all';
@@ -313,6 +315,7 @@ let rickFrameIndex = 0;
 let cityScrollFrame;
 const savedTheme = localStorage.getItem('cmd-library-theme') || 'default';
 let jojoUnlocked = localStorage.getItem('cmd-library-jojo-unlocked') === 'true';
+let mahoragaUnlocked = localStorage.getItem('cmd-library-mahoraga-unlocked') === 'true';
 const shouldResetJojoOnRefresh = jojoUnlocked && ['jojo', 'greyscale'].includes(savedTheme);
 
 function setJojoUnlocked(isUnlocked) {
@@ -321,6 +324,22 @@ function setJojoUnlocked(isUnlocked) {
   jojoThemeButton.hidden = !isUnlocked;
   if (isUnlocked) localStorage.setItem('cmd-library-jojo-unlocked', 'true');
   else localStorage.removeItem('cmd-library-jojo-unlocked');
+}
+
+function setMahoragaUnlocked(isUnlocked) {
+  mahoragaUnlocked = isUnlocked;
+  document.documentElement.classList.toggle('mahoraga-unlocked', isUnlocked);
+  mahoragaThemeButton.hidden = !isUnlocked;
+  if (isUnlocked) localStorage.setItem('cmd-library-mahoraga-unlocked', 'true');
+  else localStorage.removeItem('cmd-library-mahoraga-unlocked');
+}
+
+function summonMahoraga() {
+  setMahoragaUnlocked(true);
+  mahoragaEvent.classList.remove('is-active');
+  void mahoragaEvent.offsetWidth;
+  mahoragaEvent.classList.add('is-active');
+  window.setTimeout(() => mahoragaEvent.classList.remove('is-active'), 7000);
 }
 
 async function loadRickStream() {
@@ -591,15 +610,23 @@ function render() {
     return matchesFilter && searchable.includes(query);
   });
 
-  resultCount.textContent = String(visible.length).padStart(2, '0');
-  emptyState.hidden = visible.length > 0;
+  const isMahoragaQuery = query === 'mahoraga';
+  resultCount.textContent = String(isMahoragaQuery ? 1 : visible.length).padStart(2, '0');
+  emptyState.hidden = isMahoragaQuery || visible.length > 0;
   pageNote.textContent = currentPageNames[activePage];
   pageButtons.innerHTML = Array.from({ length: pageCounts[activeMode] }, (_, index) => index + 1).map((page) => `
     <button class="page-button${page === activePage ? ' is-active' : ''}" data-page="${page}" type="button" aria-current="${page === activePage ? 'page' : 'false'}">
       <span>0${page}</span>${currentPageNames[page].split(' / ')[0]}
     </button>
   `).join('');
-  grid.innerHTML = visible.map((item, index) => `
+  grid.innerHTML = isMahoragaQuery ? `
+    <article class="command-card mahoraga-card">
+      <div class="card-top"><span class="tag">SECRET</span><span class="card-number">00</span></div>
+      <h3>With this treasure I summon...</h3>
+      <p>A hidden signal answers from inside the command index.</p>
+      <button class="mahoraga-summon" type="button">SUMMON MAHORAGA</button>
+    </article>
+  ` : visible.map((item, index) => `
     <article class="command-card">
       <div class="card-top"><span class="tag">${item.label}</span><span class="card-number">${String(index + 1).padStart(2, '0')}</span></div>
       <h3>${item.name}</h3>
@@ -661,6 +688,9 @@ pageButtons.addEventListener('click', (event) => {
   document.querySelector('.library-heading').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 search.addEventListener('input', render);
+grid.addEventListener('click', (event) => {
+  if (event.target.closest('.mahoraga-card')) summonMahoraga();
+});
 grid.addEventListener('click', async (event) => {
   const button = event.target.closest('.copy-button');
   if (!button) return;
@@ -697,6 +727,7 @@ document.querySelector('#audio-stop').addEventListener('click', () => sendYouTub
 
 render();
 setJojoUnlocked(shouldResetJojoOnRefresh ? false : jojoUnlocked);
+setMahoragaUnlocked(mahoragaUnlocked);
 setTheme(shouldResetJojoOnRefresh ? 'default' : savedTheme);
 setThemeListOpen(false);
 loadRickStream().then(() => setRickState(document.documentElement.dataset.theme === 'default'));
