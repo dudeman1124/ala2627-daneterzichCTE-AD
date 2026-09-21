@@ -282,6 +282,7 @@ body::before {
 }
 
 .mahoraga-event.is-active {
+  background: #000;
   animation: mahoraga-summon 7s linear forwards;
   visibility: visible;
 }
