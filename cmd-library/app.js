@@ -315,7 +315,8 @@ let rickFrameIndex = 0;
 let cityScrollFrame;
 const savedTheme = localStorage.getItem('cmd-library-theme') || 'default';
 let jojoUnlocked = localStorage.getItem('cmd-library-jojo-unlocked') === 'true';
-let mahoragaUnlocked = localStorage.getItem('cmd-library-mahoraga-unlocked') === 'true';
+let mahoragaUnlocked = localStorage.getItem('cmd-library-mahoraga-unlocked') === 'true'
+  && savedTheme === 'mahoraga';
 const shouldResetJojoOnRefresh = jojoUnlocked && ['jojo', 'greyscale'].includes(savedTheme);
 
 function setJojoUnlocked(isUnlocked) {
