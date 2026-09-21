@@ -365,6 +365,12 @@ h2 {
   color: var(--muted);
 }
 
+.footer-note a {
+  margin-left: 14px;
+  color: var(--acid);
+  text-underline-offset: 4px;
+}
+
 @media (max-width: 760px) {
   .space-shell {
     width: min(100% - 24px, 1280px);
