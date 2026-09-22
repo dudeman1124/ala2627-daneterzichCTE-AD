@@ -23,6 +23,22 @@ const textureUrls = {
   earth: `${textureBase}2k_earth.jpg`, mars: `${textureBase}2k_mars.jpg`, jupiter: `${textureBase}2k_jupiter.jpg`,
   saturn: `${textureBase}2k_saturn.jpg`, uranus: `${textureBase}2k_uranus.jpg`, neptune: `${textureBase}2k_neptune.jpg`, moon: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg'
 };
+const bodyPalettes = {
+  sun: { base: 0xffd36b, accent: 0xff8a3d, glow: 0xfff0a8 },
+  mercury: { base: 0xb8a38f, accent: 0x8d7b68, glow: 0xe2d0b0 },
+  venus: { base: 0xe5b877, accent: 0xb56e3e, glow: 0xf8d7a2 },
+  earth: { base: 0x4d9ec0, accent: 0x2e7f8d, glow: 0x9de9ff },
+  mars: { base: 0xc8644c, accent: 0x7d362a, glow: 0xffb293 },
+  jupiter: { base: 0xd4a77b, accent: 0x8b5b31, glow: 0xf6d3a0 },
+  saturn: { base: 0xd9bd81, accent: 0x9d7548, glow: 0xf7e0a8 },
+  uranus: { base: 0x9bd7e6, accent: 0x5a9bb0, glow: 0xb3f3ff },
+  neptune: { base: 0x547fc8, accent: 0x234a7d, glow: 0xb6d1ff },
+  betelgeuse: { base: 0xff9671, accent: 0xff5c38, glow: 0xffd1a9 },
+  proxima: { base: 0xff826d, accent: 0xc64d4d, glow: 0xffbeaf },
+  sirius: { base: 0xcde8ff, accent: 0x7fa7d9, glow: 0xf4fbff },
+  cygx1: { base: 0x8e9ae8, accent: 0x2b2f75, glow: 0x7ec8ff },
+  'sgr-a': { base: 0xff7964, accent: 0x5d1c1c, glow: 0xffca6e }
+};
 const planetMotion = {
   mercury: { semiMajorAU: .387, orbitalDays: 87.969, rotationHours: 1407.6, axialTilt: 0.034 },
   venus: { semiMajorAU: .723, orbitalDays: 224.701, rotationHours: -5832.5, axialTilt: 177.4 },
@@ -56,27 +72,122 @@ const cameraFocus = new THREE.Vector3();
 const targetFocus = new THREE.Vector3();
 let focusBody = null;
 
-function material(color, emissive = 0x000000) { return new THREE.MeshStandardMaterial({ color, roughness: .7, metalness: .04, emissive, emissiveIntensity: emissive ? 1.4 : 0 }); }
+function clampColor(value) { return value.toString(16).padStart(6, '0'); }
+function material(color, emissive = 0x000000, emissiveIntensity = 0) {
+  return new THREE.MeshStandardMaterial({
+    color,
+    roughness: .72,
+    metalness: .06,
+    emissive,
+    emissiveIntensity,
+    envMapIntensity: .55
+  });
+}
+function createBodyTexture(baseColor, accentColor, type = 'planet') {
+  const canvas = document.createElement('canvas');
+  const size = 1024;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  const base = '#' + clampColor(baseColor);
+  const accent = '#' + clampColor(accentColor);
+
+  const gradient = ctx.createRadialGradient(size * .35, size * .35, size * .15, size * .5, size * .5, size * .9);
+  gradient.addColorStop(0, '#ffffff');
+  gradient.addColorStop(.18, base);
+  gradient.addColorStop(1, accent);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  for (let index = 0; index < 1800; index += 1) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const radius = Math.random() * (type === 'star' ? 24 : 11) + 2;
+    const alpha = type === 'star' ? .4 : .15;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (type === 'planet' || type === 'gas') {
+    for (let y = 0; y < size; y += 24) {
+      const bandAlpha = .15 + (Math.random() * .22);
+      ctx.fillStyle = `rgba(255,255,255,${bandAlpha})`;
+      ctx.fillRect(0, y, size, 6 + Math.random() * 12);
+    }
+  } else if (type === 'star') {
+    for (let ring = 0; ring < 18; ring += 1) {
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(255,255,255,${0.08 + ring * 0.03})`;
+      ctx.lineWidth = 2 + ring * .6;
+      ctx.arc(size / 2, size / 2, 140 + ring * 20, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
 function makeStars() {
   const points = [];
-  for (let index = 0; index < 1300; index += 1) {
-    const radius = 170 + Math.random() * 100;
+  for (let index = 0; index < 1800; index += 1) {
+    const radius = 140 + Math.random() * 140;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
     points.push(radius * Math.sin(phi) * Math.cos(theta), radius * Math.cos(phi), radius * Math.sin(phi) * Math.sin(theta));
   }
   const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-  scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ color: 0xe8eee8, size: .32, sizeAttenuation: true })));
+  scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ color: 0xe8eee8, size: .45, sizeAttenuation: true })));
+}
+function addGlowSprite(body, scale = 1) {
+  const spriteMap = createBodyTexture(bodyPalettes[body.id]?.base ?? body.color, bodyPalettes[body.id]?.accent ?? body.color, 'star');
+  const material = new THREE.SpriteMaterial({
+    map: spriteMap,
+    color: new THREE.Color(bodyPalettes[body.id]?.glow ?? body.color),
+    transparent: true,
+    opacity: .9,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.setScalar(body.size * 5 * scale);
+  return sprite;
 }
 function makeObject(body) {
   const group = new THREE.Group(); group.position.set(...body.position); group.userData.body = body;
   if (body.blackHole) {
-    const disk = new THREE.Mesh(new THREE.TorusGeometry(body.size * 1.6, body.size * .3, 12, 48), material(body.color, body.color)); disk.rotation.x = .35; group.add(disk);
-    const core = new THREE.Mesh(new THREE.SphereGeometry(body.size, 20, 20), material(0x030303)); group.add(core);
+    const eventHorizon = new THREE.Mesh(new THREE.SphereGeometry(body.size, 36, 32), material(0x02040a, 0x000000, 0));
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(body.size * 1.7, 36, 32), new THREE.MeshBasicMaterial({ color: 0x79b8ff, transparent: true, opacity: .22 }));
+    const accretionDisk = new THREE.Mesh(new THREE.TorusGeometry(body.size * 2.6, body.size * 1.2, 28, 160), new THREE.MeshBasicMaterial({ color: 0xffb367, transparent: true, opacity: .9, side: THREE.DoubleSide }));
+    accretionDisk.rotation.x = Math.PI / 2.2;
+    accretionDisk.rotation.y = Math.PI / 3;
+    glow.userData.body = body;
+    eventHorizon.userData.body = body;
+    accretionDisk.userData.body = body;
+    group.add(eventHorizon, glow, accretionDisk);
   } else {
-    const sphereMaterial = material(body.color, body.id === 'sun' ? body.color : 0x000000);
-    const sphere = new THREE.Mesh(new THREE.SphereGeometry(body.size, 32, 20), sphereMaterial); sphere.userData.body = body; group.add(sphere);
-    if (textureUrls[body.id]) textureLoader.load(textureUrls[body.id], (texture) => { sphereMaterial.map = texture; sphereMaterial.emissiveMap = body.id === 'sun' ? texture : null; sphereMaterial.needsUpdate = true; });
+    const isStar = body.type.includes('star') || body.id === 'sun';
+    const palette = bodyPalettes[body.id] || { base: body.color, accent: body.color, glow: body.color };
+    const texture = createBodyTexture(palette.base, palette.accent, isStar ? 'star' : 'planet');
+    const sphereMaterial = material(palette.base, isStar ? palette.glow : 0x000000, isStar ? 1.9 : 0);
+    sphereMaterial.map = texture;
+    sphereMaterial.emissive = new THREE.Color(isStar ? palette.glow : 0x000000);
+    sphereMaterial.emissiveIntensity = isStar ? 1.8 : 0;
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(body.size, 48, 32), sphereMaterial); sphere.userData.body = body; group.add(sphere);
+    if (textureUrls[body.id]) textureLoader.load(textureUrls[body.id], (textureMap) => {
+      sphereMaterial.map = textureMap;
+      sphereMaterial.emissiveMap = isStar ? textureMap : null;
+      sphereMaterial.needsUpdate = true;
+    });
+    if (isStar) {
+      const halo = addGlowSprite(body, body.id === 'betelgeuse' ? 1.5 : 1.1);
+      halo.position.set(0, 0, 0);
+      group.add(halo);
+    }
     if (planetMotion[body.id]) { group.rotation.z = THREE.MathUtils.degToRad(planetMotion[body.id].axialTilt); group.userData.motion = planetMotion[body.id]; }
     if (body.ring) { const ring = new THREE.Mesh(new THREE.RingGeometry(body.size * 1.35, body.size * 2.2, 48), new THREE.MeshBasicMaterial({ color: 0xd6c497, side: THREE.DoubleSide, transparent: true, opacity: .72 })); ring.rotation.x = Math.PI / 2.5; group.add(ring); }
     if (body.id === 'earth') { const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(body.size * 1.08, 24, 16), new THREE.MeshBasicMaterial({ color: 0x8de4ff, transparent: true, opacity: .16 })); group.add(atmosphere); }
@@ -88,7 +199,18 @@ function makeOrbits() {
 }
 function makeMoons() { bodies.filter((body) => body.moonsList).forEach((body) => body.moonsList.forEach((moonName, index) => { const moonMaterial = material(0xb8b6ac); const moon = new THREE.Mesh(new THREE.SphereGeometry(Math.max(.09, body.size * .11), 12, 8), moonMaterial); const angle = index * 1.9; moon.position.set(Math.cos(angle) * (body.size * 2.6 + index * .3), Math.sin(angle * .7) * body.size * .6, Math.sin(angle) * (body.size * 2.6 + index * .3)); if (moonName === 'Moon') textureLoader.load(textureUrls.moon, (texture) => { moonMaterial.map = texture; moonMaterial.needsUpdate = true; }); moon.userData.body = { name: moonName, type: `${body.name} moon`, category: body.category, color: 0xb8b6ac, diameter: 'Moon in catalogue', orbit: `orbits ${body.name}`, moons: 'None', distance: body.distance, description: `${moonName} is one of the named moons included in the ${body.name} system.`, note: 'Moon sizes and positions are enlarged for visibility.', size: .1, position: [0, 0, 0] }; const parent = objectMeshes.find((mesh) => mesh.userData.body?.id === body.id); (parent || orbitGroup).add(moon); objectMeshes.push(moon); })); }
 function renderCatalogue(filter = 'all') { const list = document.querySelector('#catalogue-list'); list.innerHTML = ''; bodies.filter((body) => filter === 'all' || body.category === filter).forEach((body) => { const button = document.createElement('button'); button.className = `catalogue-item${body.id === selectedBody.id ? ' is-selected' : ''}`; button.style.setProperty('--dot', `#${body.color.toString(16).padStart(6, '0')}`); button.innerHTML = `<span class="item-dot"></span><span class="item-name">${body.name}</span><span class="item-type">${body.type}</span>`; button.addEventListener('click', () => selectBody(body)); list.append(button); }); }
-function selectBody(body, focus = true) { selectedBody = body; focusBody = focus ? body : null; if (focus) { targetDistance = THREE.MathUtils.clamp(body.size * 7, 7, 22); targetFocus.set(...body.position); } document.querySelector('#detail-type').textContent = body.type.toUpperCase(); document.querySelector('#detail-distance').textContent = body.distance; document.querySelector('#detail-name').textContent = body.name; document.querySelector('#detail-description').textContent = body.description; document.querySelector('#detail-diameter').textContent = body.diameter; document.querySelector('#detail-orbit').textContent = body.orbit; document.querySelector('#detail-moons').textContent = body.moons; document.querySelector('#detail-note').textContent = body.note; renderCatalogue(document.querySelector('.filter-button.is-active').dataset.filter); }
+function selectBody(body, focus = true) {
+  selectedBody = body; focusBody = focus ? body : null;
+  if (focus) {
+    const focusVector = new THREE.Vector3(...body.position).normalize();
+    const focusDistance = body.blackHole ? 18 : body.type.includes('star') ? 22 : 12;
+    targetDistance = THREE.MathUtils.clamp(body.size * (body.blackHole ? 14 : 8) + focusDistance, 8, 60);
+    targetSpin.y = Math.atan2(-focusVector.x, -focusVector.z) + Math.PI * 0.35;
+    targetSpin.x = THREE.MathUtils.clamp(Math.asin(focusVector.y) * .9 + .45, -1.2, 1.2);
+    targetFocus.set(...body.position);
+  }
+  document.querySelector('#detail-type').textContent = body.type.toUpperCase(); document.querySelector('#detail-distance').textContent = body.distance; document.querySelector('#detail-name').textContent = body.name; document.querySelector('#detail-description').textContent = body.description; document.querySelector('#detail-diameter').textContent = body.diameter; document.querySelector('#detail-orbit').textContent = body.orbit; document.querySelector('#detail-moons').textContent = body.moons; document.querySelector('#detail-note').textContent = body.note; renderCatalogue(document.querySelector('.filter-button.is-active').dataset.filter);
+}
 function resize() { const bounds = canvas.getBoundingClientRect(); renderer.setSize(bounds.width, bounds.height, false); camera.aspect = bounds.width / bounds.height; camera.updateProjectionMatrix(); }
 function updateCamera() { camera.position.set(Math.sin(spin.y) * Math.cos(spin.x) * distance, Math.sin(spin.x) * distance, Math.cos(spin.y) * Math.cos(spin.x) * distance).add(cameraFocus); camera.lookAt(cameraFocus); }
 function animate(timestamp = 0) { requestAnimationFrame(animate); spin.x += (targetSpin.x - spin.x) * .08; spin.y += (targetSpin.y - spin.y) * .08; distance += (targetDistance - distance) * .08; const elapsedDays = timestamp / 1000 * daysPerSecond; bodies.filter((body) => planetMotion[body.id]).forEach((body) => { const motion = planetMotion[body.id]; const group = objectMeshes.find((mesh) => mesh.userData.body?.id === body.id); if (!group) return; const orbitalAngle = elapsedDays / motion.orbitalDays * Math.PI * 2; group.position.set(Math.cos(orbitalAngle) * motion.semiMajorAU * orbitScale, 0, Math.sin(orbitalAngle) * motion.semiMajorAU * orbitScale); group.rotation.y = elapsedDays / (motion.rotationHours / 24) * Math.PI * 2; }); if (focusBody) { const focusedGroup = objectMeshes.find((mesh) => mesh.userData.body?.id === focusBody.id); if (focusedGroup) { focusedGroup.getWorldPosition(targetFocus); } } else { targetFocus.set(0, 0, 0); } cameraFocus.lerp(targetFocus, .1); updateCamera(); renderer.render(scene, camera); }
