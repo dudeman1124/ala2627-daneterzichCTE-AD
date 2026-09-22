@@ -1,20 +1,23 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 const bodies = [
-  { id: 'sun', name: 'The Sun', type: 'star', category: 'all', color: 0xffd36b, diameter: '1,392,700 km', orbit: '25-35 days rotation', moons: '8 planets in system', distance: '0 AU', description: 'The gravitational anchor of our system. Every orbit in this view is arranged around this ordinary, extraordinary star.', note: 'The Sun holds about 99.8% of the Solar System\'s mass.', size: 4.5, position: [0, 0, 0] },
-  { id: 'mercury', name: 'Mercury', type: 'planet', category: 'planet', color: 0xb8a38f, diameter: '4,879 km', orbit: '88 days', moons: 'None', distance: '0.39 AU', description: 'A small, cratered world racing around the Sun faster than any other planet.', note: 'Mercury has the most extreme temperature swing of any planet.', size: .45, position: [7, 0, 0] },
-  { id: 'venus', name: 'Venus', type: 'planet', category: 'planet', color: 0xe5b877, diameter: '12,104 km', orbit: '225 days', moons: 'None', distance: '0.72 AU', description: 'A cloud-shrouded world with a runaway greenhouse atmosphere and a surface hot enough to melt lead.', note: 'Venus rotates backwards compared with most planets.', size: .72, position: [10, 0, 0] },
-  { id: 'earth', name: 'Earth', type: 'planet', category: 'planet', color: 0x4d9ec0, diameter: '12,742 km', orbit: '365.25 days', moons: '1 — Moon', distance: '1 AU', description: 'Our ocean world, the only place currently known to host life.', note: 'Earth is the only planet not named after a Greek or Roman god.', size: .76, position: [14, 0, 0], moonsList: ['Moon'] },
-  { id: 'mars', name: 'Mars', type: 'planet', category: 'planet', color: 0xc8644c, diameter: '6,779 km', orbit: '687 days', moons: '2 — Phobos, Deimos', distance: '1.52 AU', description: 'The red planet, marked by ancient river valleys, giant volcanoes, and a thin atmosphere.', note: 'Olympus Mons is the tallest volcano in the Solar System.', size: .58, position: [18, 0, 0], moonsList: ['Phobos', 'Deimos'] },
-  { id: 'jupiter', name: 'Jupiter', type: 'planet', category: 'planet', color: 0xd4a77b, diameter: '139,820 km', orbit: '11.86 years', moons: '95 known', distance: '5.2 AU', description: 'A giant of swirling storms and striped cloud bands, surrounded by a huge family of moons.', note: 'The Great Red Spot is a storm larger than Earth.', size: 1.9, position: [25, 0, 0], moonsList: ['Io', 'Europa', 'Ganymede', 'Callisto'] },
+  { id: 'sun', name: 'The Sun', type: 'star', category: 'all', color: 0xffd36b, diameter: '1,392,700 km', orbit: '25-35 days rotation', moons: '8 planets in system', distance: '0 AU', description: 'The gravitational anchor of our system. Every orbit in this view is arranged around this ordinary, extraordinary star.', note: 'The Sun holds about 99.8% of the Solar System\'s mass.', size: 2.7, position: [0, 0, 0] },
+  { id: 'mercury', name: 'Mercury', type: 'planet', category: 'planet', color: 0xb8a38f, diameter: '4,879 km', orbit: '88 days', moons: 'None', distance: '0.39 AU', description: 'A small, cratered world racing around the Sun faster than any other planet.', note: 'Mercury has the most extreme temperature swing of any planet.', size: .46, position: [9, 0, 0] },
+  { id: 'venus', name: 'Venus', type: 'planet', category: 'planet', color: 0xe5b877, diameter: '12,104 km', orbit: '225 days', moons: 'None', distance: '0.72 AU', description: 'A cloud-shrouded world with a runaway greenhouse atmosphere and a surface hot enough to melt lead.', note: 'Venus rotates backwards compared with most planets.', size: .7, position: [13, 0, 0] },
+  { id: 'earth', name: 'Earth', type: 'planet', category: 'planet', color: 0x4d9ec0, diameter: '12,742 km', orbit: '365.25 days', moons: '1 — Moon', distance: '1 AU', description: 'Our ocean world, the only place currently known to host life.', note: 'Earth is the only planet not named after a Greek or Roman god.', size: .78, position: [17, 0, 0], moonsList: ['Moon'] },
+  { id: 'mars', name: 'Mars', type: 'planet', category: 'planet', color: 0xc8644c, diameter: '6,779 km', orbit: '687 days', moons: '2 — Phobos, Deimos', distance: '1.52 AU', description: 'The red planet, marked by ancient river valleys, giant volcanoes, and a thin atmosphere.', note: 'Olympus Mons is the tallest volcano in the Solar System.', size: .62, position: [21, 0, 0], moonsList: ['Phobos', 'Deimos'] },
+  { id: 'jupiter', name: 'Jupiter', type: 'planet', category: 'planet', color: 0xd4a77b, diameter: '139,820 km', orbit: '11.86 years', moons: '95 known', distance: '5.2 AU', description: 'A giant of swirling storms and striped cloud bands, surrounded by a huge family of moons.', note: 'The Great Red Spot is a storm larger than Earth.', size: 1.9, position: [27, 0, 0], moonsList: ['Io', 'Europa', 'Ganymede', 'Callisto'] },
   { id: 'saturn', name: 'Saturn', type: 'planet', category: 'planet', color: 0xd9bd81, diameter: '116,460 km', orbit: '29.45 years', moons: '146 known', distance: '9.58 AU', description: 'A pale gas giant wearing the Solar System\'s most recognizable ring system.', note: 'Saturn is less dense than water.', size: 1.55, position: [34, 0, 0], ring: true, moonsList: ['Mimas', 'Enceladus', 'Tethys', 'Dione', 'Rhea', 'Titan', 'Iapetus', 'Phoebe'] },
-  { id: 'uranus', name: 'Uranus', type: 'planet', category: 'planet', color: 0x9bd7e6, diameter: '50,724 km', orbit: '84 years', moons: '28 known', distance: '19.2 AU', description: 'An ice giant tipped dramatically on its side, with faint rings and a blue-green atmosphere.', note: 'A season on Uranus can last more than 20 Earth years.', size: 1.05, position: [44, 0, 0], ring: true, moonsList: ['Miranda', 'Ariel', 'Umbriel', 'Titania', 'Oberon'] },
-  { id: 'neptune', name: 'Neptune', type: 'planet', category: 'planet', color: 0x547fc8, diameter: '49,244 km', orbit: '164.8 years', moons: '16 known', distance: '30.1 AU', description: 'The distant blue ice giant, where the fastest winds in the Solar System whip through the clouds.', note: 'Neptune was the first planet found through mathematical prediction.', size: 1.02, position: [55, 0, 0], moonsList: ['Triton', 'Nereid', 'Naiad', 'Thalassa', 'Despina', 'Galatea', 'Larissa', 'Proteus'] },
-  { id: 'proxima', name: 'Proxima Centauri', type: 'nearby star', category: 'nearby', color: 0xff826d, diameter: '≈ 200,000 km', orbit: 'Red dwarf star', moons: '2 known planets', distance: '4.24 ly', description: 'The nearest known star to the Sun, a small red dwarf in the Alpha Centauri system.', note: 'Its planet Proxima b orbits in the star\'s habitable zone.', size: 1.2, position: [-26, 7, -17] },
-  { id: 'sirius', name: 'Sirius', type: 'nearby star', category: 'nearby', color: 0xcde8ff, diameter: '2.38 × Sun', orbit: 'Binary system', moons: '1 companion star', distance: '8.6 ly', description: 'The brightest star in Earth\'s night sky, a blue-white star paired with a dense white dwarf.', note: 'Sirius B was the first white dwarf discovered.', size: 1.35, position: [-19, -8, 23] },
-  { id: 'betelgeuse', name: 'Betelgeuse', type: 'nearby star', category: 'nearby', color: 0xff9671, diameter: '≈ 764 × Sun', orbit: 'Variable supergiant', moons: 'None known', distance: '642 ly', description: 'A red supergiant in Orion nearing the end of its stellar life.', note: 'Its radius would reach beyond the orbit of Mars if placed where our Sun is.', size: 2.2, position: [18, 15, -24] },
-  { id: 'cygx1', name: 'Cygnus X-1', type: 'black hole', category: 'nearby', color: 0x9bd7e6, diameter: '≈ 60 km event horizon', orbit: '5.6 days binary orbit', moons: '1 companion star', distance: '7,200 ly', description: 'One of the first strong black-hole candidates, feeding on gas pulled from a nearby blue supergiant.', note: 'It is an X-ray binary: the black hole itself emits no light.', size: 1.1, position: [29, -13, 19], blackHole: true },
-  { id: 'sgr-a', name: 'Sagittarius A*', type: 'black hole', category: 'nearby', color: 0xff7964, diameter: '≈ 24 million km', orbit: 'Galactic center', moons: 'Many orbiting stars', distance: '26,700 ly', description: 'The supermassive black hole at the center of the Milky Way, around which our galaxy turns.', note: 'Its mass is about four million times that of the Sun.', size: 1.7, position: [3, -18, -34], blackHole: true }
+  { id: 'uranus', name: 'Uranus', type: 'planet', category: 'planet', color: 0x9bd7e6, diameter: '50,724 km', orbit: '84 years', moons: '28 known', distance: '19.2 AU', description: 'An ice giant tipped dramatically on its side, with faint rings and a blue-green atmosphere.', note: 'A season on Uranus can last more than 20 Earth years.', size: 1.05, position: [43, 0, 0], ring: true, moonsList: ['Miranda', 'Ariel', 'Umbriel', 'Titania', 'Oberon'] },
+  { id: 'neptune', name: 'Neptune', type: 'planet', category: 'planet', color: 0x547fc8, diameter: '49,244 km', orbit: '164.8 years', moons: '16 known', distance: '30.1 AU', description: 'The distant blue ice giant, where the fastest winds in the Solar System whip through the clouds.', note: 'Neptune was the first planet found through mathematical prediction.', size: 1.02, position: [56, 0, 0], moonsList: ['Triton', 'Nereid', 'Naiad', 'Thalassa', 'Despina', 'Galatea', 'Larissa', 'Proteus'] },
+  { id: 'proxima', name: 'Proxima Centauri', type: 'nearby star', category: 'nearby', color: 0xff826d, diameter: '≈ 200,000 km', orbit: 'Red dwarf star', moons: '2 known planets', distance: '4.24 ly', description: 'The nearest known star to the Sun, a small red dwarf in the Alpha Centauri system.', note: 'Its planet Proxima b orbits in the star\'s habitable zone.', size: .8, position: [-180, 60, -220] },
+  { id: 'sirius', name: 'Sirius', type: 'nearby star', category: 'nearby', color: 0xcde8ff, diameter: '2.38 × Sun', orbit: 'Binary system', moons: '1 companion star', distance: '8.6 ly', description: 'The brightest star in Earth\'s night sky, a blue-white star paired with a dense white dwarf.', note: 'Sirius B was the first white dwarf discovered.', size: 1.05, position: [-260, 110, 360] },
+  { id: 'betelgeuse', name: 'Betelgeuse', type: 'nearby star', category: 'nearby', color: 0xff9671, diameter: '≈ 764 × Sun', orbit: 'Variable supergiant', moons: 'None known', distance: '642 ly', description: 'A red supergiant in Orion nearing the end of its stellar life.', note: 'Its radius would reach beyond the orbit of Mars if placed where our Sun is.', size: 1.48, position: [420, 180, -640] },
+  { id: 'cygx1', name: 'Cygnus X-1', type: 'black hole', category: 'nearby', color: 0x9bd7e6, diameter: '≈ 60 km event horizon', orbit: '5.6 days binary orbit', moons: '1 companion star', distance: '7,200 ly', description: 'One of the first strong black-hole candidates, feeding on gas pulled from a nearby blue supergiant.', note: 'It is an X-ray binary: the black hole itself emits no light.', size: .82, position: [520, -120, 340], blackHole: true },
+  { id: 'sgr-a', name: 'Sagittarius A*', type: 'black hole', category: 'nearby', color: 0xff7964, diameter: '≈ 24 million km', orbit: 'Galactic center', moons: 'Many orbiting stars', distance: '26,700 ly', description: 'The supermassive black hole at the center of the Milky Way, around which our galaxy turns.', note: 'Its mass is about four million times that of the Sun.', size: 1.08, position: [160, -240, -540], blackHole: true }
 ];
 
 const textureBase = 'https://www.solarsystemscope.com/textures/download/';
@@ -40,27 +43,39 @@ const bodyPalettes = {
   'sgr-a': { base: 0xff7964, accent: 0x5d1c1c, glow: 0xffca6e }
 };
 const planetMotion = {
-  mercury: { semiMajorAU: .387, orbitalDays: 87.969, rotationHours: 1407.6, axialTilt: 0.034 },
-  venus: { semiMajorAU: .723, orbitalDays: 224.701, rotationHours: -5832.5, axialTilt: 177.4 },
-  earth: { semiMajorAU: 1, orbitalDays: 365.256, rotationHours: 23.934, axialTilt: 23.44 },
-  mars: { semiMajorAU: 1.524, orbitalDays: 686.98, rotationHours: 24.623, axialTilt: 25.19 },
-  jupiter: { semiMajorAU: 5.203, orbitalDays: 4332.59, rotationHours: 9.925, axialTilt: 3.13 },
-  saturn: { semiMajorAU: 9.537, orbitalDays: 10759.22, rotationHours: 10.656, axialTilt: 26.73 },
-  uranus: { semiMajorAU: 19.191, orbitalDays: 30688.5, rotationHours: -17.24, axialTilt: 97.77 },
-  neptune: { semiMajorAU: 30.07, orbitalDays: 60182, rotationHours: 16.11, axialTilt: 28.32 }
+  mercury: { semiMajorAU: 1.2, orbitalDays: 87.969, rotationHours: 1407.6, axialTilt: 0.034 },
+  venus: { semiMajorAU: 1.9, orbitalDays: 224.701, rotationHours: -5832.5, axialTilt: 177.4 },
+  earth: { semiMajorAU: 2.7, orbitalDays: 365.256, rotationHours: 23.934, axialTilt: 23.44 },
+  mars: { semiMajorAU: 3.7, orbitalDays: 686.98, rotationHours: 24.623, axialTilt: 25.19 },
+  jupiter: { semiMajorAU: 9.8, orbitalDays: 4332.59, rotationHours: 9.925, axialTilt: 3.13 },
+  saturn: { semiMajorAU: 15.8, orbitalDays: 10759.22, rotationHours: 10.656, axialTilt: 26.73 },
+  uranus: { semiMajorAU: 24.8, orbitalDays: 30688.5, rotationHours: -17.24, axialTilt: 97.77 },
+  neptune: { semiMajorAU: 33.2, orbitalDays: 60182, rotationHours: 16.11, axialTilt: 28.32 }
 };
-const orbitScale = 1.83;
-const daysPerSecond = 365.256 / 12;
+const orbitScale = 2.4;
+const daysPerSecond = 365.256 / 180;
 const textureLoader = new THREE.TextureLoader();
 
 const canvas = document.querySelector('#space-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, 1, .1, 500);
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const objectMeshes = [];
 const orbitGroup = new THREE.Group();
+const shaderMaterials = [];
+const composer = new EffectComposer(renderer);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.9, 0.8, 0.15);
+bloomPass.threshold = 0.12;
+bloomPass.strength = 0.9;
+bloomPass.radius = 0.8;
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(bloomPass);
 let selectedBody = bodies[0];
 let spin = { x: .3, y: -.25 };
 let targetSpin = { x: .3, y: -.25 };
@@ -71,6 +86,44 @@ let previousPointer = { x: 0, y: 0 };
 const cameraFocus = new THREE.Vector3();
 const targetFocus = new THREE.Vector3();
 let focusBody = null;
+const backgroundPresets = {
+  default: { background: 0x07090a, top: 0x0f1a25, bottom: 0x07090a, accent: 0x9bd7e6 },
+  star: { background: 0x090d16, top: 0x1a1939, bottom: 0x090d16, accent: 0xffd38a },
+  blackHole: { background: 0x02050a, top: 0x0a1120, bottom: 0x02050a, accent: 0x7ec8ff }
+};
+const backgroundSphere = new THREE.Mesh(
+  new THREE.SphereGeometry(420, 48, 32),
+  new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    uniforms: {
+      uTopColor: { value: new THREE.Color(backgroundPresets.default.top) },
+      uBottomColor: { value: new THREE.Color(backgroundPresets.default.bottom) },
+      uAccentColor: { value: new THREE.Color(backgroundPresets.default.accent) }
+    },
+    vertexShader: `
+      varying vec3 vWorldPosition;
+      void main() {
+        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+        vWorldPosition = normalize(worldPosition.xyz);
+        gl_Position = projectionMatrix * viewMatrix * worldPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uTopColor;
+      uniform vec3 uBottomColor;
+      uniform vec3 uAccentColor;
+      varying vec3 vWorldPosition;
+      void main() {
+        float t = smoothstep(-0.8, 0.9, vWorldPosition.y);
+        vec3 color = mix(uBottomColor, uTopColor, t);
+        float halo = pow(max(0.0, 1.0 - abs(vWorldPosition.x)), 1.8);
+        color += uAccentColor * halo * 0.14;
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `
+  })
+);
+scene.add(backgroundSphere);
 
 function clampColor(value) { return value.toString(16).padStart(6, '0'); }
 function material(color, emissive = 0x000000, emissiveIntensity = 0) {
@@ -82,6 +135,86 @@ function material(color, emissive = 0x000000, emissiveIntensity = 0) {
     emissiveIntensity,
     envMapIntensity: .55
   });
+}
+function createBodyShaderMaterial(body, palette, isStar) {
+  const uniforms = {
+    uTime: { value: 0 },
+    uBaseColor: { value: new THREE.Color(palette.base) },
+    uAccentColor: { value: new THREE.Color(palette.accent) },
+    uGlowColor: { value: new THREE.Color(palette.glow) },
+    uStarStrength: { value: isStar ? 1.0 : 0.4 },
+    uRadius: { value: body.size }
+  };
+
+  const shaderMaterial = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: `
+      varying vec3 vWorldPosition;
+      varying vec3 vNormal;
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+        vWorldPosition = worldPosition.xyz;
+        vNormal = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * viewMatrix * worldPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform vec3 uBaseColor;
+      uniform vec3 uAccentColor;
+      uniform vec3 uGlowColor;
+      uniform float uStarStrength;
+      uniform float uRadius;
+      varying vec3 vWorldPosition;
+      varying vec3 vNormal;
+      varying vec2 vUv;
+
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+      }
+
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        float a = hash(i);
+        float b = hash(i + vec2(1.0, 0.0));
+        float c = hash(i + vec2(0.0, 1.0));
+        float d = hash(i + vec2(1.0, 1.0));
+        return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+      }
+
+      void main() {
+        vec3 normal = normalize(vNormal);
+        vec3 lightDir = normalize(vec3(0.7, 1.0, 0.5));
+        float diffuse = max(dot(normal, lightDir), 0.0);
+
+        float turbulence = noise(vUv * 18.0 + uTime * 0.15) * 0.75;
+        turbulence += noise(vUv * 38.0 - uTime * 0.11) * 0.45;
+        float bands = sin((vWorldPosition.x + vWorldPosition.y + vWorldPosition.z) * 6.0 + uTime * 0.7) * 0.5 + 0.5;
+
+        vec3 base = mix(uBaseColor, uAccentColor, turbulence * 0.7 + bands * 0.35);
+        vec3 lit = base * (0.28 + diffuse * 1.2);
+
+        if (uStarStrength > 0.7) {
+          float corona = smoothstep(0.8, 1.1, 1.0 - abs(dot(normal, vec3(0.0, 0.0, 1.0))));
+          lit = mix(lit, uGlowColor, corona * 0.9 + turbulence * 0.3);
+        }
+
+        vec3 finalColor = mix(lit, uGlowColor, 0.12 + turbulence * 0.18);
+        finalColor *= (0.75 + diffuse * 0.7);
+
+        gl_FragColor = vec4(finalColor, 1.0);
+      }
+    `,
+    transparent: false,
+    side: THREE.FrontSide
+  });
+
+  shaderMaterials.push(shaderMaterial);
+  return shaderMaterial;
 }
 function createBodyTexture(baseColor, accentColor, type = 'planet') {
   const canvas = document.createElement('canvas');
@@ -143,6 +276,14 @@ function makeStars() {
   const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
   scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ color: 0xe8eee8, size: .45, sizeAttenuation: true })));
 }
+function applyBackgroundPreset(body) {
+  const preset = body?.blackHole ? backgroundPresets.blackHole : (body?.type?.includes('star') || body?.id === 'sun' ? backgroundPresets.star : backgroundPresets.default);
+  scene.background = new THREE.Color(preset.background);
+  scene.fog = new THREE.FogExp2(preset.background, 0.0018);
+  backgroundSphere.material.uniforms.uTopColor.value.setHex(preset.top);
+  backgroundSphere.material.uniforms.uBottomColor.value.setHex(preset.bottom);
+  backgroundSphere.material.uniforms.uAccentColor.value.setHex(preset.accent);
+}
 function addGlowSprite(body, scale = 1) {
   const spriteMap = createBodyTexture(bodyPalettes[body.id]?.base ?? body.color, bodyPalettes[body.id]?.accent ?? body.color, 'star');
   const material = new THREE.SpriteMaterial({
@@ -156,6 +297,109 @@ function addGlowSprite(body, scale = 1) {
   const sprite = new THREE.Sprite(material);
   sprite.scale.setScalar(body.size * 5 * scale);
   return sprite;
+}
+function addAtmosphereShell(body, radius, color, intensity = 1) {
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 40, 32),
+    new THREE.ShaderMaterial({
+      transparent: true,
+      side: THREE.BackSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uColor: { value: new THREE.Color(color) },
+        uIntensity: { value: intensity }
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+          vWorldPosition = worldPosition.xyz;
+          gl_Position = projectionMatrix * viewMatrix * worldPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uColor;
+        uniform float uIntensity;
+        varying vec3 vNormal;
+        void main() {
+          float fresnel = pow(1.0 - abs(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0))), 3.0);
+          float alpha = fresnel * uIntensity;
+          gl_FragColor = vec4(uColor * (0.6 + fresnel * 1.8), alpha);
+        }
+      `
+    })
+  );
+  atmosphere.userData.body = body;
+  return atmosphere;
+}
+function addSunCorona(body) {
+  const corona = new THREE.Mesh(
+    new THREE.SphereGeometry(body.size * 2.6, 60, 48),
+    new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uColor: { value: new THREE.Color(0xffd38a) },
+        uTime: { value: 0 }
+      },
+      vertexShader: `
+        varying vec3 vPosition;
+        void main() {
+          vPosition = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uColor;
+        uniform float uTime;
+        varying vec3 vPosition;
+        void main() {
+          float r = length(vPosition);
+          float pulse = sin((vPosition.x + vPosition.y + vPosition.z) * 16.0 + uTime * 1.5) * 0.12 + 0.88;
+          float alpha = smoothstep(1.0, 2.6, r) * pulse;
+          gl_FragColor = vec4(uColor * (0.75 + pulse), alpha * 0.9);
+        }
+      `
+    })
+  );
+  return corona;
+}
+function createRingShaderMaterial(color, opacity) {
+  return new THREE.ShaderMaterial({
+    transparent: true,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      uColor: { value: new THREE.Color(color) },
+      uOpacity: { value: opacity }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      varying vec2 vUv;
+      void main() {
+        float dist = length(vUv - vec2(0.5));
+        float ring = smoothstep(0.78, 0.57, dist) * (1.0 - smoothstep(0.36, 0.18, dist));
+        float bands = sin((vUv.x * 32.0 + vUv.y * 12.0) * 3.14159) * 0.25 + 0.75;
+        float alpha = ring * uOpacity;
+        vec3 color = uColor * (0.6 + bands * 0.9);
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
 }
 function makeObject(body) {
   const group = new THREE.Group(); group.position.set(...body.position); group.userData.body = body;
@@ -172,24 +416,30 @@ function makeObject(body) {
   } else {
     const isStar = body.type.includes('star') || body.id === 'sun';
     const palette = bodyPalettes[body.id] || { base: body.color, accent: body.color, glow: body.color };
-    const texture = createBodyTexture(palette.base, palette.accent, isStar ? 'star' : 'planet');
-    const sphereMaterial = material(palette.base, isStar ? palette.glow : 0x000000, isStar ? 1.9 : 0);
-    sphereMaterial.map = texture;
-    sphereMaterial.emissive = new THREE.Color(isStar ? palette.glow : 0x000000);
-    sphereMaterial.emissiveIntensity = isStar ? 1.8 : 0;
-    const sphere = new THREE.Mesh(new THREE.SphereGeometry(body.size, 48, 32), sphereMaterial); sphere.userData.body = body; group.add(sphere);
-    if (textureUrls[body.id]) textureLoader.load(textureUrls[body.id], (textureMap) => {
-      sphereMaterial.map = textureMap;
-      sphereMaterial.emissiveMap = isStar ? textureMap : null;
-      sphereMaterial.needsUpdate = true;
-    });
+    const shaderMaterial = createBodyShaderMaterial(body, palette, isStar);
+    shaderMaterial.uniforms.uTime.value = 0;
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(body.size, 64, 48), shaderMaterial); sphere.userData.body = body; group.add(sphere);
+    if (body.id === 'sun') {
+      const corona = addSunCorona(body);
+      corona.userData.body = body;
+      group.add(corona);
+    }
     if (isStar) {
-      const halo = addGlowSprite(body, body.id === 'betelgeuse' ? 1.5 : 1.1);
+      const halo = addGlowSprite(body, body.id === 'sun' ? .7 : body.id === 'betelgeuse' ? 1.35 : 1.1);
       halo.position.set(0, 0, 0);
       group.add(halo);
     }
+    const atmosphere = addAtmosphereShell(body, body.size * 1.18, isStar ? palette.glow : 0x7db9ff, isStar ? 1.5 : 0.8);
+    group.add(atmosphere);
     if (planetMotion[body.id]) { group.rotation.z = THREE.MathUtils.degToRad(planetMotion[body.id].axialTilt); group.userData.motion = planetMotion[body.id]; }
-    if (body.ring) { const ring = new THREE.Mesh(new THREE.RingGeometry(body.size * 1.35, body.size * 2.2, 48), new THREE.MeshBasicMaterial({ color: 0xd6c497, side: THREE.DoubleSide, transparent: true, opacity: .72 })); ring.rotation.x = Math.PI / 2.5; group.add(ring); }
+    if (body.ring) {
+      const ringColor = body.id === 'uranus' ? 0x9dc6d9 : 0xd9c099;
+      const ringMaterial = createRingShaderMaterial(ringColor, body.id === 'uranus' ? 0.42 : 0.7);
+      const ring = new THREE.Mesh(new THREE.RingGeometry(body.size * 1.6, body.size * 2.4, 128), ringMaterial);
+      ring.rotation.x = Math.PI / 2.2;
+      ring.rotation.z = body.id === 'uranus' ? Math.PI / 5 : 0;
+      group.add(ring);
+    }
     if (body.id === 'earth') { const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(body.size * 1.08, 24, 16), new THREE.MeshBasicMaterial({ color: 0x8de4ff, transparent: true, opacity: .16 })); group.add(atmosphere); }
   }
   orbitGroup.add(group); objectMeshes.push(group); return group;
@@ -209,13 +459,14 @@ function selectBody(body, focus = true) {
     targetSpin.x = THREE.MathUtils.clamp(Math.asin(focusVector.y) * .9 + .45, -1.2, 1.2);
     targetFocus.set(...body.position);
   }
+  applyBackgroundPreset(body);
   document.querySelector('#detail-type').textContent = body.type.toUpperCase(); document.querySelector('#detail-distance').textContent = body.distance; document.querySelector('#detail-name').textContent = body.name; document.querySelector('#detail-description').textContent = body.description; document.querySelector('#detail-diameter').textContent = body.diameter; document.querySelector('#detail-orbit').textContent = body.orbit; document.querySelector('#detail-moons').textContent = body.moons; document.querySelector('#detail-note').textContent = body.note; renderCatalogue(document.querySelector('.filter-button.is-active').dataset.filter);
 }
 function resize() { const bounds = canvas.getBoundingClientRect(); renderer.setSize(bounds.width, bounds.height, false); camera.aspect = bounds.width / bounds.height; camera.updateProjectionMatrix(); }
 function updateCamera() { camera.position.set(Math.sin(spin.y) * Math.cos(spin.x) * distance, Math.sin(spin.x) * distance, Math.cos(spin.y) * Math.cos(spin.x) * distance).add(cameraFocus); camera.lookAt(cameraFocus); }
-function animate(timestamp = 0) { requestAnimationFrame(animate); spin.x += (targetSpin.x - spin.x) * .08; spin.y += (targetSpin.y - spin.y) * .08; distance += (targetDistance - distance) * .08; const elapsedDays = timestamp / 1000 * daysPerSecond; bodies.filter((body) => planetMotion[body.id]).forEach((body) => { const motion = planetMotion[body.id]; const group = objectMeshes.find((mesh) => mesh.userData.body?.id === body.id); if (!group) return; const orbitalAngle = elapsedDays / motion.orbitalDays * Math.PI * 2; group.position.set(Math.cos(orbitalAngle) * motion.semiMajorAU * orbitScale, 0, Math.sin(orbitalAngle) * motion.semiMajorAU * orbitScale); group.rotation.y = elapsedDays / (motion.rotationHours / 24) * Math.PI * 2; }); if (focusBody) { const focusedGroup = objectMeshes.find((mesh) => mesh.userData.body?.id === focusBody.id); if (focusedGroup) { focusedGroup.getWorldPosition(targetFocus); } } else { targetFocus.set(0, 0, 0); } cameraFocus.lerp(targetFocus, .1); updateCamera(); renderer.render(scene, camera); }
+function animate(timestamp = 0) { requestAnimationFrame(animate); spin.x += (targetSpin.x - spin.x) * .08; spin.y += (targetSpin.y - spin.y) * .08; distance += (targetDistance - distance) * .08; shaderMaterials.forEach((material) => { material.uniforms.uTime.value = timestamp * 0.001; }); const elapsedDays = timestamp / 1000 * daysPerSecond; bodies.filter((body) => planetMotion[body.id]).forEach((body) => { const motion = planetMotion[body.id]; const group = objectMeshes.find((mesh) => mesh.userData.body?.id === body.id); if (!group) return; const orbitalAngle = elapsedDays / motion.orbitalDays * Math.PI * 2; group.position.set(Math.cos(orbitalAngle) * motion.semiMajorAU * orbitScale, 0, Math.sin(orbitalAngle) * motion.semiMajorAU * orbitScale); group.rotation.y = elapsedDays / (motion.rotationHours / 24) * Math.PI * 2; }); if (focusBody) { const focusedGroup = objectMeshes.find((mesh) => mesh.userData.body?.id === focusBody.id); if (focusedGroup) { focusedGroup.getWorldPosition(targetFocus); } } else { targetFocus.set(0, 0, 0); } cameraFocus.lerp(targetFocus, .1); updateCamera(); composer.render(); }
 
-scene.background = new THREE.Color(0x07090a); scene.add(new THREE.AmbientLight(0x70838b, .55)); const sunLight = new THREE.PointLight(0xffd58b, 3.8, 180); sunLight.position.set(0, 0, 0); scene.add(sunLight); scene.add(orbitGroup); makeStars(); makeOrbits(); bodies.forEach(makeObject); makeMoons();
+scene.background = new THREE.Color(0x07090a); scene.fog = new THREE.FogExp2(0x07090a, 0.0018); scene.add(new THREE.AmbientLight(0x70838b, .55)); const sunLight = new THREE.PointLight(0xffd58b, 3.8, 180); sunLight.position.set(0, 0, 0); scene.add(sunLight); scene.add(orbitGroup); makeStars(); makeOrbits(); bodies.forEach(makeObject); makeMoons(); applyBackgroundPreset(selectedBody);
 document.querySelector('#object-count').textContent = `${bodies.length} CATALOGUE OBJECTS`; renderCatalogue(); selectBody(selectedBody, false); resize(); animate();
 
 document.querySelectorAll('.filter-button').forEach((button) => button.addEventListener('click', () => { document.querySelector('.filter-button.is-active').classList.remove('is-active'); button.classList.add('is-active'); renderCatalogue(button.dataset.filter); }));
