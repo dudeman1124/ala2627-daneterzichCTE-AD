@@ -227,6 +227,49 @@ const cssCommands = [
   { page: 5, name: 'Layout Containment', category: 'uberhell', label: 'UBERHELL', description: 'Isolate layout and paint effects so a component can render independently.', command: '.widget {\n  contain: layout paint;\n  content-visibility: auto;\n}' }
 ];
 
+const htmlCommands = [
+  { page: 1, name: 'Document Type', category: 'foundation', label: 'Foundation', description: 'Declare the HTML standard the browser should use.', command: '<!doctype html>' },
+  { page: 1, name: 'Page Structure', category: 'foundation', label: 'Foundation', description: 'Create the main document skeleton with a head and body.', command: '<html>\n  <head>\n    <title>Demo</title>\n  </head>\n  <body>\n    <h1>Hello</h1>\n  </body>\n</html>' },
+  { page: 1, name: 'Heading', category: 'foundation', label: 'Foundation', description: 'Give the page a clear top-level heading.', command: '<h1>Launch Checklist</h1>' },
+  { page: 1, name: 'Paragraph', category: 'foundation', label: 'Foundation', description: 'Add readable text content to the page.', command: '<p>Ship the release when the tests pass.</p>' },
+  { page: 1, name: 'Link', category: 'foundation', label: 'Foundation', description: 'Connect one page or resource to another location.', command: '<a href="https://example.com">Open docs</a>' },
+  { page: 1, name: 'Image', category: 'foundation', label: 'Foundation', description: 'Display an image with a clear alternative description.', command: '<img src="/images/cover.jpg" alt="Cover art">' },
+  { page: 1, name: 'List', category: 'foundation', label: 'Foundation', description: 'Present sequential or grouped information as a list.', command: '<ul>\n  <li>Plan</li>\n  <li>Build</li>\n  <li>Ship</li>\n</ul>' },
+  { page: 1, name: 'Button', category: 'foundation', label: 'Foundation', description: 'Give the user an actionable control in the page.', command: '<button type="button">Save</button>' },
+  { page: 2, name: 'Main Landmark', category: 'intermediate', label: 'Intermediate', description: 'Mark the primary content area for assistive tech and structure.', command: '<main>\n  <h2>Project Updates</h2>\n</main>' },
+  { page: 2, name: 'Navigation', category: 'intermediate', label: 'Intermediate', description: 'Group site links into a navigation landmark.', command: '<nav aria-label="Main navigation">\n  <a href="#home">Home</a>\n  <a href="#about">About</a>\n</nav>' },
+  { page: 2, name: 'Article', category: 'intermediate', label: 'Intermediate', description: 'Expose a self-contained block of content with its own meaning.', command: '<article>\n  <h2>Release Notes</h2>\n  <p>Version 2.1 adds faster builds.</p>\n</article>' },
+  { page: 2, name: 'Section', category: 'intermediate', label: 'Intermediate', description: 'Organize related content into a themed section.', command: '<section aria-labelledby="team-title">\n  <h2 id="team-title">Team</h2>\n</section>' },
+  { page: 2, name: 'Table', category: 'intermediate', label: 'Intermediate', description: 'Present tabular data with a clear row and column structure.', command: '<table>\n  <tr><th>Name</th><th>Status</th></tr>\n  <tr><td>Lin</td><td>Ready</td></tr>\n</table>' },
+  { page: 2, name: 'Form', category: 'intermediate', label: 'Intermediate', description: 'Collect user information with accessible input controls.', command: '<form>\n  <label for="email">Email</label>\n  <input id="email" type="email">\n</form>' },
+  { page: 2, name: 'Details', category: 'intermediate', label: 'Intermediate', description: 'Reveal optional extra content when the user expands it.', command: '<details>\n  <summary>More details</summary>\n  <p>Only shown when opened.</p>\n</details>' },
+  { page: 2, name: 'Figure', category: 'intermediate', label: 'Intermediate', description: 'Attach a caption to an image, diagram, or chart.', command: '<figure>\n  <img src="chart.png" alt="Weekly traffic chart">\n  <figcaption>Traffic trend</figcaption>\n</figure>' },
+  { page: 3, name: 'Semantic HTML', category: 'advanced', label: 'Advanced', description: 'Use landmark, header, main, and footer elements to communicate document structure.', command: '<header><nav>...</nav></header>\n<main>...</main>\n<footer>...</footer>' },
+  { page: 3, name: 'ARIA Labels', category: 'advanced', label: 'Advanced', description: 'Give interactive controls accessible names when the visible text is not enough.', command: '<button aria-label="Close panel">×</button>' },
+  { page: 3, name: 'Data Attributes', category: 'advanced', label: 'Advanced', description: 'Attach custom metadata without affecting the page’s visual structure.', command: '<div data-status="ready" data-team="ops">Ready</div>' },
+  { page: 3, name: 'Picture Source', category: 'advanced', label: 'Advanced', description: 'Serve the most suitable image for the current viewport or device.', command: '<picture>\n  <source srcset="large.jpg" media="(min-width: 800px)">\n  <img src="small.jpg" alt="Product shot">\n</picture>' },
+  { page: 3, name: 'Dialog', category: 'advanced', label: 'Advanced', description: 'Create an accessible modal layer with explicit dialog semantics.', command: '<dialog open>\n  <p>Save your changes?</p>\n</dialog>' },
+  { page: 3, name: 'Template', category: 'advanced', label: 'Advanced', description: 'Store inert markup that can be cloned later without rendering it immediately.', command: '<template id="card-template">\n  <article class="card"></article>\n</template>' },
+  { page: 3, name: 'Video', category: 'advanced', label: 'Advanced', description: 'Embed a media file with controls and an accessible fallback.', command: '<video controls poster="preview.jpg">\n  <source src="clip.mp4" type="video/mp4">\n</video>' },
+  { page: 3, name: 'Progress', category: 'advanced', label: 'Advanced', description: 'Report progress for a long-running task without custom scripts.', command: '<progress value="35" max="100">35%</progress>' },
+  { page: 4, name: 'Custom Element', category: 'hell', label: 'Hell', description: 'Define a reusable HTML element that encapsulates behavior and structure.', command: 'class AppCard extends HTMLElement {\n  connectedCallback() { this.innerHTML = "<article>Hi</article>"; }\n}\ncustomElements.define("app-card", AppCard);' },
+  { page: 4, name: 'Slot Content', category: 'hell', label: 'Hell', description: 'Project light DOM into a shadow-hosted component with named slots.', command: '<template>\n  <slot name="header"></slot>\n  <slot></slot>\n</template>' },
+  { page: 4, name: 'Shadow DOM', category: 'hell', label: 'Hell', description: 'Isolate a component’s DOM tree and styles from the rest of the page.', command: 'const host = document.createElement("demo-card");\nconst shadow = host.attachShadow({ mode: "open" });' },
+  { page: 4, name: 'Form Validation', category: 'hell', label: 'Hell', description: 'Use native constraint rules before JS runs on submission.', command: '<input type="email" required minlength="8">\n<button type="submit">Send</button>' },
+  { page: 4, name: 'SVG Inline', category: 'hell', label: 'Hell', description: 'Draw scalable, semantic graphics directly into the document.', command: '<svg viewBox="0 0 100 100" aria-label="Logo">\n  <circle cx="50" cy="50" r="40" />\n</svg>' },
+  { page: 4, name: 'Popover', category: 'hell', label: 'Hell', description: 'Create a lightweight floating layer that can be toggled declaratively.', command: '<button popovertarget="menu">Menu</button>\n<div id="menu" popover>Context actions</div>' },
+  { page: 4, name: 'Input Modes', category: 'hell', label: 'Hell', description: 'Signal the most useful keyboard layout for a field.', command: '<input type="tel" inputmode="numeric" autocomplete="tel">' },
+  { page: 4, name: 'MathML', category: 'hell', label: 'Hell', description: 'Express mathematical notation with semantic markup instead of plain text.', command: '<math><mi>x</mi><mo>+</mo><mn>2</mn></math>' },
+  { page: 5, name: 'HTML Parser', category: 'uberhell', label: 'UBERHELL', description: 'Understand how the browser tokenizes, tree-builds, and reflows document markup.', command: 'const parser = new DOMParser();\nconst doc = parser.parseFromString(source, "text/html");' },
+  { page: 5, name: 'Document Fragments', category: 'uberhell', label: 'UBERHELL', description: 'Batch DOM creation offscreen before inserting it into the live tree.', command: 'const fragment = document.createDocumentFragment();\nfragment.appendChild(item);\nlist.appendChild(fragment);' },
+  { page: 5, name: 'Accessibility Tree', category: 'uberhell', label: 'UBERHELL', description: 'Think in terms of the browser’s accessibility mapping, not just what is visible.', command: '<button aria-expanded="true">Sections</button>\n<div role="region" aria-label="Sections">...</div>' },
+  { page: 5, name: 'Template Instancing', category: 'uberhell', label: 'UBERHELL', description: 'Clone a template multiple times and transform each instance separately.', command: 'const template = document.querySelector("#card-template");\nconst clone = template.content.cloneNode(true);' },
+  { page: 5, name: 'Custom State', category: 'uberhell', label: 'UBERHELL', description: 'Serialize UI state into the DOM so the page can restore itself later.', command: '<button aria-pressed="true" data-mode="compact">Compact</button>' },
+  { page: 5, name: 'HTML Imports', category: 'uberhell', label: 'UBERHELL', description: 'Import a document fragment or component definition to reuse markup.', command: '<link rel="import" href="component.html">' },
+  { page: 5, name: 'Mutation Observer', category: 'uberhell', label: 'UBERHELL', description: 'React to DOM changes without polling the entire tree.', command: 'const observer = new MutationObserver(() => console.log("tree changed"));\nobserver.observe(root, { childList: true, subtree: true });' },
+  { page: 5, name: 'Web Components', category: 'uberhell', label: 'UBERHELL', description: 'Combine custom elements, templates, and shadow boundaries into reusable UI.', command: 'class ProductTile extends HTMLElement {\n  connectedCallback() { this.attachShadow({ mode: "open" }); }\n}' }
+];
+
 const grid = document.querySelector('#command-grid');
 const search = document.querySelector('#command-search');
 const filters = document.querySelector('#filters');
@@ -240,6 +283,7 @@ const pythonMode = document.querySelector('#python-mode');
 const javascriptMode = document.querySelector('#javascript-mode');
 const assemblyMode = document.querySelector('#assembly-mode');
 const cssMode = document.querySelector('#css-mode');
+const htmlMode = document.querySelector('#html-mode');
 const toolkitOptions = document.querySelector('#toolkit-options');
 const toolkitToggle = document.querySelector('#toolkit-toggle');
 const themeOptions = document.querySelector('#theme-options');
@@ -292,21 +336,30 @@ const cssPageNames = {
   4: 'Hell / browser sorcery',
   5: 'UBERHELL / rendering machinery'
 };
+const htmlPageNames = {
+  1: 'Beginner / document structure',
+  2: 'Intermediate / semantic layout',
+  3: 'Advanced / accessibility and media',
+  4: 'Hell / custom elements and browser APIs',
+  5: 'UBERHELL / DOM and document machinery'
+};
 const filterNames = {
   cmd: { all: 'All', discover: 'Discover', files: 'Files', network: 'Network', automate: 'Automate' },
   python: { all: 'All', foundation: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', hell: 'Hell', uberhell: 'UBERHELL' },
   javascript: { all: 'All', foundation: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', hell: 'Hell', uberhell: 'UBERHELL' },
   assembly: { all: 'All', foundation: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', hell: 'Hell', uberhell: 'UBERHELL' },
-  css: { all: 'All', foundation: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', hell: 'Hell', uberhell: 'UBERHELL' }
+  css: { all: 'All', foundation: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', hell: 'Hell', uberhell: 'UBERHELL' },
+  html: { all: 'All', foundation: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', hell: 'Hell', uberhell: 'UBERHELL' }
 };
 const filterKeys = {
   cmd: ['all', 'discover', 'files', 'network', 'automate'],
   python: ['all', 'foundation', 'intermediate', 'advanced', 'hell', 'uberhell'],
   javascript: ['all', 'foundation', 'intermediate', 'advanced', 'hell', 'uberhell'],
   assembly: ['all', 'foundation', 'intermediate', 'advanced', 'hell', 'uberhell'],
-  css: ['all', 'foundation', 'intermediate', 'advanced', 'hell', 'uberhell']
+  css: ['all', 'foundation', 'intermediate', 'advanced', 'hell', 'uberhell'],
+  html: ['all', 'foundation', 'intermediate', 'advanced', 'hell', 'uberhell']
 };
-const pageCounts = { cmd: 3, python: 5, javascript: 5, assembly: 5, css: 5 };
+const pageCounts = { cmd: 3, python: 5, javascript: 5, assembly: 5, css: 5, html: 5 };
 let matrixAnimation;
 let glitchAnimation;
 let rickAnimation;
@@ -587,12 +640,14 @@ function render() {
     ? commands
     : activeMode === 'python' ? pythonCommands
       : activeMode === 'javascript' ? javascriptCommands
-        : activeMode === 'assembly' ? assemblyCommands : cssCommands;
+        : activeMode === 'assembly' ? assemblyCommands
+          : activeMode === 'css' ? cssCommands : htmlCommands;
   const currentPageNames = activeMode === 'cmd'
     ? pageNames
     : activeMode === 'python' ? pythonPageNames
       : activeMode === 'javascript' ? javascriptPageNames
-        : activeMode === 'assembly' ? assemblyPageNames : cssPageNames;
+        : activeMode === 'assembly' ? assemblyPageNames
+          : activeMode === 'css' ? cssPageNames : htmlPageNames;
   const pageCommands = currentCommands.filter((item) => item.page === activePage);
   filters.querySelectorAll('.filter-button').forEach((button, index) => {
     const filter = filterKeys[activeMode][index];
@@ -649,7 +704,7 @@ function setCommandMode(mode) {
   activeMode = mode;
   activeFilter = 'all';
   activePage = 1;
-  const modes = { cmd: cmdMode, python: pythonMode, javascript: javascriptMode, assembly: assemblyMode, css: cssMode };
+  const modes = { cmd: cmdMode, python: pythonMode, javascript: javascriptMode, assembly: assemblyMode, css: cssMode, html: htmlMode };
   Object.entries(modes).forEach(([name, button]) => {
     const isActive = name === mode;
     button.classList.toggle('is-active', isActive);
@@ -657,14 +712,15 @@ function setCommandMode(mode) {
   });
   libraryTitle.textContent = mode === 'cmd'
     ? 'The standard-user toolkit'
-    : `The ${mode === 'python' ? 'Python' : mode === 'javascript' ? 'JavaScript' : mode === 'assembly' ? 'Assembly' : 'CSS'} code toolkit`;
+    : `The ${mode === 'python' ? 'Python' : mode === 'javascript' ? 'JavaScript' : mode === 'assembly' ? 'Assembly' : mode === 'css' ? 'CSS' : 'HTML'} code toolkit`;
   search.placeholder = mode === 'cmd'
     ? 'Try: network, process, files...'
     : mode === 'assembly' ? 'Try: registers, memory, loops...'
-      : mode === 'css' ? 'Try: layout, grid, animation...' : 'Try: arrays, files, async...';
+      : mode === 'css' ? 'Try: layout, grid, animation...'
+        : mode === 'html' ? 'Try: structure, forms, accessibility...' : 'Try: arrays, files, async...';
   render();
   toolkitToggle.textContent = mode === 'cmd'
-    ? 'CMD' : mode === 'python' ? 'Python' : mode === 'javascript' ? 'JavaScript' : mode === 'assembly' ? 'Assembly' : 'CSS';
+    ? 'CMD' : mode === 'python' ? 'Python' : mode === 'javascript' ? 'JavaScript' : mode === 'assembly' ? 'Assembly' : mode === 'css' ? 'CSS' : 'HTML';
   toolkitOptions.hidden = true;
   toolkitToggle.setAttribute('aria-expanded', 'false');
 }
@@ -674,6 +730,7 @@ pythonMode.addEventListener('click', () => setCommandMode('python'));
 javascriptMode.addEventListener('click', () => setCommandMode('javascript'));
 assemblyMode.addEventListener('click', () => setCommandMode('assembly'));
 cssMode.addEventListener('click', () => setCommandMode('css'));
+htmlMode.addEventListener('click', () => setCommandMode('html'));
 
 toolkitToggle.addEventListener('click', () => {
   const isOpen = toolkitOptions.hidden;
