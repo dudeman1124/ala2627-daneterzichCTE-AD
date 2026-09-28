@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f0e8">
+  <meta name="description" content="A searchable collection of loud, annoying, and deeply confusing sounds.">
+  <title>DT Soundboard // Noise Department</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="back-link" href="../">← DT at ALA</a>
+      <p class="live-mark"><span></span> THE NOISE DEPARTMENT</p>
+      <p class="sound-count"><span id="sound-count">12</span> SOUNDS / NO DOWNLOADS</p>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">DT PRESENTS / AUDIO CHAOS</p>
+        <h1 id="page-title">DT<br><span>SOUNDBOARD</span></h1>
+        <div class="intro-bottom">
+          <p>A pocket-sized collection of sounds with absolutely no business being this loud.</p>
+          <span class="sound-wave"
+            aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+      </section>
+
+      <section class="sound-finder" aria-label="Find a sound">
+        <label for="sound-search">FIND A SOUND</label>
+        <div class="search-field">
+          <span aria-hidden="true">⌕</span>
+          <input id="sound-search" type="search" placeholder="Try airhorn, dial-up, chaos..." autocomplete="off">
+          <kbd>/</kbd>
+        </div>
+      </section>
+
+      <section class="category-section" aria-labelledby="category-title">
+        <div class="section-heading">
+          <p class="eyebrow">PICK YOUR PROBLEM</p>
+          <h2 id="category-title">What are we feeling?</h2>
+        </div>
+        <div class="category-grid" id="categories" role="group" aria-label="Sound categories">
+          <button class="category-tile category-tile--all is-active" data-category="all" type="button"
+            aria-pressed="true">
+            <span class="category-number">00 / EVERYTHING</span>
+            <span class="category-name">ALL<br>SOUNDS</span>
+            <span class="category-meta"><span data-category-count="all">12</span> BUTTONS <span class="category-arrow"
+                aria-hidden="true">↗</span></span>
+          </button>
+          <button class="category-tile category-tile--loud" data-category="loud" type="button" aria-pressed="false">
+            <span class="category-number">01 / TURN IT UP</span>
+            <span class="category-name">LOUD<span class="punctuation">!</span></span>
+            <span class="category-meta"><span data-category-count="loud">4</span> BUTTONS <span class="category-arrow"
+                aria-hidden="true">↗</span></span>
+          </button>
+          <button class="category-tile category-tile--annoying" data-category="annoying" type="button"
+            aria-pressed="false">
+            <span class="category-number">02 / TEST PATIENCE</span>
+            <span class="category-name">ANNOYING<span class="punctuation">.</span></span>
+            <span class="category-meta"><span data-category-count="annoying">4</span> BUTTONS <span
+                class="category-arrow" aria-hidden="true">↗</span></span>
+          </button>
+          <button class="category-tile category-tile--weird" data-category="weird" type="button" aria-pressed="false">
+            <span class="category-number">03 / NO EXPLANATION</span>
+            <span class="category-name">WTH IS<br>THIS<span class="punctuation">?</span></span>
+            <span class="category-meta"><span data-category-count="weird">4</span> BUTTONS <span class="category-arrow"
+                aria-hidden="true">↗</span></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="sound-section" aria-labelledby="sounds-title">
+        <div class="sound-section-heading">
+          <div>
+            <p class="eyebrow">THE BUTTON WALL / <span id="result-count">12</span> RESULTS</p>
+            <h2 id="sounds-title">Pick a noise.</h2>
+          </div>
+          <label class="volume-control" for="volume">
+            <span>VOLUME</span>
+            <input id="volume" type="range" min="0" max="100" value="65">
+            <output id="volume-value" for="volume">65%</output>
+          </label>
+        </div>
+        <div class="sound-grid" id="sound-grid" aria-live="polite"></div>
+        <p class="empty-state" id="empty-state" hidden>No sounds found. Try another search.</p>
+        <p class="play-status" id="play-status" role="status" aria-live="polite">READY WHEN YOU ARE</p>
+      </section>
+    </main>
+
+    <footer>
+      <span>DT SOUNDBOARD / 2026</span>
+      <span>MADE FOR NOISE. USE YOUR JUDGMENT.</span>
+    </footer>
+  </div>
+</body>
+
+</html>

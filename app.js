@@ -25,6 +25,7 @@ async function loadRickStream() {
 
 const projectDirectories = new Map([
   ['cmd-library', 'cmd-library'],
+  ['dt-soundboard', 'DT-Soundboard'],
   ['polytrack-inspiration', 'Polytrack-Inspiration'],
   ['dt-gpt', 'DT-GPT'],
   ['smoke-detector', 'smoke-detector'],
