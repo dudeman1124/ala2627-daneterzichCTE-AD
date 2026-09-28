@@ -17,7 +17,7 @@
       <a class="back-link" href="../">← DT AT ALA</a>
       <p class="brand"><span class="brand-mark">BP</span> BINARY PIRACY <span class="brand-divider">/</span> ASCII
         CINEMA</p>
-      <span class="local-badge"><i></i> LOCAL FILES ONLY</span>
+      <span class="local-badge"><i></i> LOCAL + YOUTUBE</span>
     </header>
 
     <main>
@@ -26,33 +26,71 @@
           <p class="eyebrow">HOME VIDEO, RECOMPILED / 001</p>
           <h1>THE <span>CHARACTER</span><br>ACTOR.</h1>
         </div>
-        <p class="heading-note">Your movie, frame by frame, redrawn in the language of the keyboard.</p>
+        <p class="heading-note">Local movies, frame by frame in keyboard characters. YouTube plays in its official
+          embedded player.</p>
       </section>
 
-      <div class="workspace">
-        <aside class="library" aria-label="Local movie library">
-          <div class="library-heading">
-            <div>
-              <p class="eyebrow">YOUR DEVICE</p>
-              <h2>Movie shelf <span id="movie-count">00</span></h2>
-            </div>
-            <label class="add-button" for="movie-files" title="Add video files" aria-label="Add video files">+</label>
-            <input id="movie-files" type="file" accept="video/*" multiple hidden>
-          </div>
+      <div class="workspace" id="workspace" data-player="movie">
+        <aside class="library" aria-label="Video library">
+          <nav class="source-tabs" id="source-tabs" role="tablist" aria-label="Choose a video source">
+            <button class="source-tab is-active" id="movies-tab" type="button" role="tab" aria-selected="true"
+              aria-controls="movies-panel" tabindex="0" data-library="movies">MOVIES</button>
+            <button class="source-tab" id="youtube-tab" type="button" role="tab" aria-selected="false"
+              aria-controls="youtube-panel" tabindex="-1" data-library="youtube">YOUTUBE</button>
+          </nav>
 
           <label class="search-box" for="movie-search">
             <span aria-hidden="true">⌕</span>
-            <input id="movie-search" type="search" placeholder="Find a movie..." autocomplete="off">
+            <input id="movie-search" type="search" placeholder="Find a movie..." autocomplete="off"
+              aria-label="Search movies">
             <kbd>/</kbd>
           </label>
 
-          <div class="library-list" id="movie-list" aria-live="polite"></div>
-          <div class="library-empty" id="library-empty">
-            <span class="empty-icon" aria-hidden="true">▧</span>
-            <p>Your shelf is empty.</p>
-            <label for="movie-files">ADD A VIDEO FILE <span aria-hidden="true">↗</span></label>
-          </div>
-          <p class="library-footnote">Files stay in this browser tab. Nothing is uploaded.</p>
+          <section class="library-panel" id="movies-panel" role="tabpanel" aria-labelledby="movies-tab">
+            <div class="library-heading">
+              <div>
+                <p class="eyebrow">YOUR DEVICE</p>
+                <h2>Movie shelf <span id="movie-count">00</span></h2>
+              </div>
+              <label class="add-button" for="movie-files" title="Add video files" aria-label="Add video files">+</label>
+              <input id="movie-files" type="file" accept="video/*" multiple hidden>
+            </div>
+            <div class="library-list" id="movie-list" aria-live="polite"></div>
+            <div class="library-empty" id="library-empty">
+              <span class="empty-icon" aria-hidden="true">▧</span>
+              <p>Your shelf is empty.</p>
+              <label for="movie-files">ADD A VIDEO FILE <span aria-hidden="true">↗</span></label>
+            </div>
+            <p class="library-footnote">Files stay in this browser tab. Nothing is uploaded.</p>
+          </section>
+
+          <section class="library-panel youtube-panel" id="youtube-panel" role="tabpanel" aria-labelledby="youtube-tab"
+            hidden>
+            <div class="library-heading">
+              <div>
+                <p class="eyebrow">SAVED VIDEO LINKS</p>
+                <h2>YouTube shelf <span id="youtube-count">00</span></h2>
+              </div>
+              <a class="browse-youtube" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer"
+                aria-label="Browse YouTube in a new tab">↗</a>
+            </div>
+            <form class="youtube-form" id="youtube-form">
+              <input id="youtube-title" type="text" maxlength="70" placeholder="Video title (optional)"
+                aria-label="Optional video title">
+              <div class="youtube-url-row">
+                <input id="youtube-url" type="url" placeholder="Paste a YouTube video link"
+                  aria-label="YouTube video URL" required>
+                <button type="submit" aria-label="Add YouTube video">+</button>
+              </div>
+            </form>
+            <div class="library-list" id="youtube-list" aria-live="polite"></div>
+            <div class="library-empty" id="youtube-empty">
+              <span class="empty-icon" aria-hidden="true">▶</span>
+              <p>No YouTube videos saved.</p>
+              <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">FIND A VIDEO ON YOUTUBE ↗</a>
+            </div>
+            <p class="library-footnote">Links are saved in this browser. Videos play on YouTube.</p>
+          </section>
         </aside>
 
         <section class="theater" aria-label="ASCII movie player">
@@ -69,6 +107,9 @@
   THEN SELECT IT TO PLAY</pre>
             <video id="source-video" playsinline preload="metadata" aria-label="Local video audio source"></video>
             <canvas id="sample-canvas" hidden></canvas>
+            <iframe class="youtube-player" id="youtube-player" title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin" allowfullscreen hidden></iframe>
           </div>
           <div class="film-title-row">
             <div>

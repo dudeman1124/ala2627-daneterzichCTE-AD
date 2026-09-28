@@ -3,7 +3,18 @@ const movieSearch = document.querySelector('#movie-search');
 const movieList = document.querySelector('#movie-list');
 const libraryEmpty = document.querySelector('#library-empty');
 const movieCount = document.querySelector('#movie-count');
+const youtubeList = document.querySelector('#youtube-list');
+const youtubeEmpty = document.querySelector('#youtube-empty');
+const youtubeCount = document.querySelector('#youtube-count');
+const youtubeForm = document.querySelector('#youtube-form');
+const youtubeTitleInput = document.querySelector('#youtube-title');
+const youtubeUrlInput = document.querySelector('#youtube-url');
+const sourceTabs = document.querySelector('#source-tabs');
+const moviesPanel = document.querySelector('#movies-panel');
+const youtubePanel = document.querySelector('#youtube-panel');
+const workspace = document.querySelector('#workspace');
 const video = document.querySelector('#source-video');
+const youtubePlayer = document.querySelector('#youtube-player');
 const screen = document.querySelector('#screen');
 const asciiFrame = document.querySelector('#ascii-frame');
 const sampleCanvas = document.querySelector('#sample-canvas');
@@ -20,8 +31,10 @@ const playerStatus = document.querySelector('#player-status');
 const playerMessage = document.querySelector('#player-message');
 const screenResolution = document.querySelector('#screen-resolution');
 const movies = [];
+const youtubeEntries = loadYoutubeEntries();
 const glyphs = ' .,:;irsXA253hMHGS#9B&@';
 let selectedMovie;
+let activeLibrary = 'movies';
 let frameRequest;
 let lastFrame = 0;
 let nextMovieId = 0;
@@ -36,6 +49,47 @@ function formatTime(seconds) {
 function formatSize(bytes) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function loadYoutubeEntries() {
+  try {
+    const storedEntries = JSON.parse(localStorage.getItem('binary-piracy-youtube') || '[]');
+    if (!Array.isArray(storedEntries)) return [];
+    return storedEntries.filter((entry) => entry
+      && /^[a-zA-Z0-9_-]{11}$/.test(entry.videoId)
+      && typeof entry.title === 'string')
+      .map((entry) => ({ videoId: entry.videoId, title: entry.title.slice(0, 70) }));
+  } catch {
+    return [];
+  }
+}
+
+function saveYoutubeEntries() {
+  try {
+    localStorage.setItem('binary-piracy-youtube', JSON.stringify(youtubeEntries));
+  } catch {
+    playerMessage.textContent = 'This browser could not save the YouTube shelf. The current list will remain until you leave.';
+  }
+}
+
+function getYoutubeVideoId(value) {
+  try {
+    const normalizedUrl = value.includes('://') ? value : `https://${value}`;
+    const url = new URL(normalizedUrl);
+    const hostname = url.hostname.toLowerCase();
+    const isYoutube = hostname === 'youtube.com'
+      || hostname.endsWith('.youtube.com')
+      || hostname === 'youtu.be';
+    if (!isYoutube || !['http:', 'https:'].includes(url.protocol)) return null;
+
+    const pathParts = url.pathname.split('/').filter(Boolean);
+    const videoId = hostname === 'youtu.be'
+      ? pathParts[0]
+      : url.searchParams.get('v') || (['shorts', 'embed', 'live'].includes(pathParts[0]) ? pathParts[1] : null);
+    return videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId) ? videoId : null;
+  } catch {
+    return null;
+  }
 }
 
 function renderLibrary() {
@@ -78,6 +132,67 @@ function renderLibrary() {
   }
 }
 
+function renderYoutubeLibrary() {
+  const query = movieSearch.value.trim().toLowerCase();
+  const visibleEntries = youtubeEntries.filter((entry) => `${entry.title} ${entry.videoId}`.toLowerCase().includes(query));
+  youtubeList.replaceChildren();
+  youtubeCount.textContent = String(youtubeEntries.length).padStart(2, '0');
+  youtubeEmpty.hidden = youtubeEntries.length > 0;
+
+  for (const entry of visibleEntries) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `movie-row${youtubePlayer.dataset.videoId === entry.videoId ? ' is-active' : ''}`;
+    button.setAttribute('aria-current', String(youtubePlayer.dataset.videoId === entry.videoId));
+
+    const icon = document.createElement('span');
+    icon.className = 'movie-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = '▶';
+
+    const copy = document.createElement('span');
+    copy.className = 'movie-row-copy';
+    const title = document.createElement('span');
+    title.className = 'movie-row-title';
+    title.textContent = entry.title;
+    const meta = document.createElement('span');
+    meta.className = 'movie-row-meta';
+    meta.textContent = `YOUTUBE / ${entry.videoId}`;
+    copy.append(title, meta);
+    button.append(icon, copy);
+    button.addEventListener('click', () => selectYoutubeVideo(entry));
+    youtubeList.append(button);
+  }
+
+  if (youtubeEntries.length && !visibleEntries.length) {
+    const emptyResult = document.createElement('p');
+    emptyResult.className = 'library-footnote';
+    emptyResult.textContent = 'No YouTube videos match that search.';
+    youtubeList.append(emptyResult);
+  }
+}
+
+function renderLibraries() {
+  renderLibrary();
+  renderYoutubeLibrary();
+}
+
+function setActiveLibrary(library) {
+  activeLibrary = library;
+  const isYoutube = library === 'youtube';
+  sourceTabs.querySelectorAll('[role="tab"]').forEach((tab) => {
+    const selected = tab.dataset.library === library;
+    tab.classList.toggle('is-active', selected);
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  });
+  moviesPanel.hidden = isYoutube;
+  youtubePanel.hidden = !isYoutube;
+  movieSearch.placeholder = isYoutube ? 'Find a YouTube video...' : 'Find a movie...';
+  movieSearch.setAttribute('aria-label', isYoutube ? 'Search saved YouTube videos' : 'Search movies');
+  renderLibraries();
+}
+
 function addFiles(fileList) {
   const acceptedFiles = [...fileList].filter((file) => file.type.startsWith('video/'));
   const skippedCount = fileList.length - acceptedFiles.length;
@@ -96,6 +211,12 @@ function addFiles(fileList) {
 }
 
 function selectMovie(movie) {
+  workspace.dataset.player = 'movie';
+  youtubePlayer.hidden = true;
+  youtubePlayer.src = 'about:blank';
+  delete youtubePlayer.dataset.videoId;
+  asciiFrame.hidden = false;
+  video.pause();
   selectedMovie = movie;
   video.src = movie.url;
   video.load();
@@ -108,6 +229,21 @@ function selectMovie(movie) {
   video.play().catch(() => {
     playerMessage.textContent = 'Video ready. Press play to start.';
   });
+}
+
+function selectYoutubeVideo(entry) {
+  video.pause();
+  window.cancelAnimationFrame(frameRequest);
+  workspace.dataset.player = 'youtube';
+  asciiFrame.hidden = true;
+  youtubePlayer.hidden = false;
+  youtubePlayer.dataset.videoId = entry.videoId;
+  youtubePlayer.src = `https://www.youtube-nocookie.com/embed/${entry.videoId}?autoplay=1&rel=0`;
+  nowPlaying.textContent = entry.title;
+  playerStatus.textContent = 'YOUTUBE EMBED';
+  screenResolution.textContent = 'OFFICIAL PLAYER / YOUTUBE';
+  playerMessage.textContent = 'YouTube plays in its embedded player. Cross-origin video cannot be converted to ASCII.';
+  renderYoutubeLibrary();
 }
 
 function renderAsciiFrame() {
@@ -149,7 +285,51 @@ function drawFrames(timestamp) {
 }
 
 fileInput.addEventListener('change', () => addFiles(fileInput.files));
-movieSearch.addEventListener('input', renderLibrary);
+movieSearch.addEventListener('input', renderLibraries);
+sourceTabs.addEventListener('click', (event) => {
+  const tab = event.target.closest('[role="tab"]');
+  if (tab) setActiveLibrary(tab.dataset.library);
+});
+sourceTabs.addEventListener('keydown', (event) => {
+  const tabs = [...sourceTabs.querySelectorAll('[role="tab"]')];
+  const currentIndex = tabs.indexOf(document.activeElement);
+  const nextIndex = event.key === 'ArrowRight' || event.key === 'ArrowDown'
+    ? (currentIndex + 1) % tabs.length
+    : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+      ? (currentIndex - 1 + tabs.length) % tabs.length
+      : event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? tabs.length - 1
+          : -1;
+  if (nextIndex < 0) return;
+  event.preventDefault();
+  tabs[nextIndex].focus();
+  setActiveLibrary(tabs[nextIndex].dataset.library);
+});
+youtubeForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const videoId = getYoutubeVideoId(youtubeUrlInput.value.trim());
+  if (!videoId) {
+    playerMessage.textContent = 'Enter a valid YouTube video, Shorts, or youtu.be link.';
+    youtubeUrlInput.focus();
+    return;
+  }
+  if (youtubeEntries.some((entry) => entry.videoId === videoId)) {
+    playerMessage.textContent = 'That YouTube video is already on your shelf.';
+    youtubeUrlInput.focus();
+    return;
+  }
+
+  const title = youtubeTitleInput.value.trim() || `YouTube video ${youtubeEntries.length + 1}`;
+  youtubeEntries.push({ videoId, title });
+  saveYoutubeEntries();
+  renderYoutubeLibrary();
+  youtubeTitleInput.value = '';
+  youtubeUrlInput.value = '';
+  playerMessage.textContent = 'YouTube link added to your saved shelf.';
+  youtubeUrlInput.focus();
+});
 playButton.addEventListener('click', () => {
   if (video.paused) video.play().catch(() => {
     playerMessage.textContent = 'This video could not be played by your browser.';
@@ -215,7 +395,7 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'Escape' && document.activeElement === movieSearch) {
     movieSearch.value = '';
-    renderLibrary();
+    renderLibraries();
     movieSearch.blur();
   }
 });
@@ -227,4 +407,4 @@ document.addEventListener('drop', (event) => {
 });
 
 video.volume = Number(volume.value) / 100;
-renderLibrary();
+renderLibraries();
