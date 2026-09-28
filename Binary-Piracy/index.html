@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#e9e5d9">
+  <meta name="description" content="Watch video files from your device as live ASCII art. Your movies stay local.">
+  <title>Binary Piracy // ASCII Cinema</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="back-link" href="../">← DT AT ALA</a>
+      <p class="brand"><span class="brand-mark">BP</span> BINARY PIRACY <span class="brand-divider">/</span> ASCII
+        CINEMA</p>
+      <span class="local-badge"><i></i> LOCAL FILES ONLY</span>
+    </header>
+
+    <main>
+      <section class="page-heading">
+        <div>
+          <p class="eyebrow">HOME VIDEO, RECOMPILED / 001</p>
+          <h1>THE <span>CHARACTER</span><br>ACTOR.</h1>
+        </div>
+        <p class="heading-note">Your movie, frame by frame, redrawn in the language of the keyboard.</p>
+      </section>
+
+      <div class="workspace">
+        <aside class="library" aria-label="Local movie library">
+          <div class="library-heading">
+            <div>
+              <p class="eyebrow">YOUR DEVICE</p>
+              <h2>Movie shelf <span id="movie-count">00</span></h2>
+            </div>
+            <label class="add-button" for="movie-files" title="Add video files" aria-label="Add video files">+</label>
+            <input id="movie-files" type="file" accept="video/*" multiple hidden>
+          </div>
+
+          <label class="search-box" for="movie-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="movie-search" type="search" placeholder="Find a movie..." autocomplete="off">
+            <kbd>/</kbd>
+          </label>
+
+          <div class="library-list" id="movie-list" aria-live="polite"></div>
+          <div class="library-empty" id="library-empty">
+            <span class="empty-icon" aria-hidden="true">▧</span>
+            <p>Your shelf is empty.</p>
+            <label for="movie-files">ADD A VIDEO FILE <span aria-hidden="true">↗</span></label>
+          </div>
+          <p class="library-footnote">Files stay in this browser tab. Nothing is uploaded.</p>
+        </aside>
+
+        <section class="theater" aria-label="ASCII movie player">
+          <div class="theater-topline">
+            <span><i class="status-light"></i> <span id="player-status">AWAITING FILM</span></span>
+            <span id="screen-resolution">ASCII / 00 × 00</span>
+          </div>
+          <div class="screen" id="screen">
+            <pre class="ascii-frame" id="ascii-frame" role="img" aria-label="ASCII video display">  B I N A R Y   P I R A C Y
+
+  [ SELECT A LOCAL MOVIE TO BEGIN ]
+
+  ADD A VIDEO FILE TO YOUR SHELF
+  THEN SELECT IT TO PLAY</pre>
+            <video id="source-video" playsinline preload="metadata" aria-label="Local video audio source"></video>
+            <canvas id="sample-canvas" hidden></canvas>
+          </div>
+          <div class="film-title-row">
+            <div>
+              <p class="eyebrow">NOW SCREENING</p>
+              <h2 id="now-playing">NO FILM SELECTED</h2>
+            </div>
+            <button class="fullscreen-button" id="fullscreen-button" type="button" aria-label="Toggle fullscreen"
+              title="Toggle fullscreen">⛶</button>
+          </div>
+
+          <div class="transport">
+            <button class="play-button" id="play-button" type="button" disabled aria-label="Play">▶</button>
+            <span class="timecode" id="current-time">00:00</span>
+            <input class="seek-bar" id="seek-bar" type="range" min="0" max="1000" value="0"
+              aria-label="Seek through movie" disabled>
+            <span class="timecode" id="duration">00:00</span>
+          </div>
+          <div class="player-options">
+            <label for="density">CHARACTER DENSITY</label>
+            <input id="density" type="range" min="35" max="100" value="72">
+            <output id="density-value" for="density">72%</output>
+            <span class="options-spacer"></span>
+            <label for="volume">AUDIO</label>
+            <input id="volume" type="range" min="0" max="100" value="70" aria-label="Volume">
+          </div>
+          <p class="player-message" id="player-message" role="status" aria-live="polite">Add a video file from your
+            device to start your shelf.</p>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <span>BP / LOCAL ASCII CINEMA</span>
+      <span>ONLY PLAY MEDIA YOU HAVE THE RIGHT TO USE.</span>
+    </footer>
+  </div>
+</body>
+
+</html>
