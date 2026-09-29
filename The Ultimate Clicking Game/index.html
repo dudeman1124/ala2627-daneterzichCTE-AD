@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f1eee5">
+  <meta name="description" content="Click your way from spare change to a money-making empire.">
+  <title>The Ultimate Clicking Game</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="back-link" href="../">DT at ALA</a>
+      <p class="game-mark"><span></span> SMALL CHANGE / BIG PLANS</p>
+      <p class="save-status" id="save-status">GAME SAVED</p>
+    </header>
+    <section class="game-layout" aria-label="Clicking game">
+      <div class="click-zone">
+        <div class="eyebrow-row">
+          <p class="eyebrow">THE MONEY MACHINE</p>
+          <p class="day-count">RUN <span id="run-count">001</span></p>
+        </div>
+        <div class="wallet">
+          <p class="wallet-label">YOUR BALANCE</p>
+          <p class="balance" id="balance" aria-live="polite">$0.00</p>
+          <p class="rate-line"><span class="rate-dot"></span><span id="rate">+$0.01</span> per click <span
+              class="rate-divider">/</span> <span id="income-rate">$0.00</span> per sec</p>
+        </div>
+        <button class="money-button" id="money-button" type="button" aria-label="Click to earn money">
+          <span class="coin-shadow" aria-hidden="true"></span>
+          <span class="coin" aria-hidden="true"><span class="coin-mark">$</span><span class="coin-orbit"></span></span>
+          <span class="click-prompt">CLICK TO EARN <span aria-hidden="true">↗</span></span>
+        </button>
+        <div class="click-footer"><span>EVERY PENNY COUNTS</span><span><kbd>SPACE</kbd> TO CLICK</span></div>
+      </div>
+      <aside class="control-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">YOUR EMPIRE</p>
+            <h1>Make it<br><em>multiply.</em></h1>
+          </div><span class="live-stamp">UCG<br>001</span>
+        </div>
+        <nav class="tabs" role="tablist" aria-label="Game sections">
+          <button class="tab is-active" id="tab-clickers" role="tab" aria-selected="true" aria-controls="tab-panel"
+            data-tab="clickers" type="button"><span>01</span>Clickers</button>
+          <button class="tab" id="tab-helpers" role="tab" aria-selected="false" aria-controls="tab-panel"
+            data-tab="helpers" type="button"><span>02</span>Helpers</button>
+          <button class="tab" id="tab-achievements" role="tab" aria-selected="false" aria-controls="tab-panel"
+            data-tab="achievements" type="button"><span>03</span>Achievements</button>
+          <button class="tab" id="tab-places" role="tab" aria-selected="false" aria-controls="tab-panel"
+            data-tab="places" type="button"><span>04</span>Places</button>
+          <button class="tab" id="tab-settings" role="tab" aria-selected="false" aria-controls="tab-panel"
+            data-tab="settings" type="button"><span>05</span>Settings</button>
+        </nav>
+        <section class="tab-panel" id="tab-panel" role="tabpanel" aria-labelledby="tab-clickers" tabindex="0"></section>
+      </aside>
+    </section>
+    <footer class="page-footer"><span>THE ULTIMATE CLICKING GAME</span><span>ONE CENT AT A TIME / <span
+          id="lifetime-earned">$0.00</span> EARNED</span></footer>
+  </main>
+</body>
+
+</html>

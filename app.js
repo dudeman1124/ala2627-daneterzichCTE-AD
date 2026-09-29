@@ -25,6 +25,8 @@ async function loadRickStream() {
 
 const projectDirectories = new Map([
   ['cmd-library', 'cmd-library'],
+  ['the ultimate clicking game', 'The Ultimate Clicking Game'],
+  ['ucg', 'The Ultimate Clicking Game'],
   ['dt-soundboard', 'DT-Soundboard'],
   ['binary-piracy', 'Binary-Piracy'],
   ['polytrack-inspiration', 'Polytrack-Inspiration'],
