@@ -1,5 +1,5 @@
 const SAVE_KEY = 'ucg-save-v1';
-const startingState = { balance: 0, totalEarned: 0, clicks: 0, clickPower: 1, upgrades: 0, helpers: 0, places: ['bedroom'], activePlace: 'bedroom', sound: false, compact: false };
+const startingState = { balance: 0, totalEarned: 0, clicks: 0, clickPower: 1, upgrades: 0, poorMiners: 0, budgetMiners: 0, superButtons: 0, places: ['bedroom'], activePlace: 'bedroom', sound: false, compact: false };
 const places = [
   { id: 'bedroom', name: 'Bedroom desk', detail: 'A humble start. Every empire begins somewhere.', threshold: 0, multiplier: 1 },
   { id: 'garage', name: 'The garage', detail: 'A little more room to grow.', threshold: 250, multiplier: 2 },
@@ -23,7 +23,13 @@ let activeTab = 'clickers';
 let audioContext;
 
 try {
-  state = { ...startingState, ...JSON.parse(localStorage.getItem(SAVE_KEY)) };
+  const savedState = JSON.parse(localStorage.getItem(SAVE_KEY)) || {};
+  state = {
+    ...startingState,
+    ...savedState,
+    poorMiners: savedState.poorMiners ?? savedState.helpers ?? 0
+  };
+  delete state.helpers;
 } catch {
   state = { ...startingState };
 }
@@ -35,6 +41,10 @@ function money(cents) {
 
 function placeMultiplier() {
   return places.find((place) => place.id === state.activePlace)?.multiplier || 1;
+}
+
+function incomePerSecond() {
+  return (state.poorMiners + state.budgetMiners * 100 + state.superButtons * 20) * placeMultiplier();
 }
 
 function save() {
@@ -49,7 +59,7 @@ function save() {
 function refreshBalance() {
   document.querySelector('#balance').textContent = money(state.balance);
   document.querySelector('#rate').textContent = `+${money(state.clickPower * placeMultiplier())}`;
-  document.querySelector('#income-rate').textContent = money(state.helpers * placeMultiplier());
+  document.querySelector('#income-rate').textContent = money(incomePerSecond());
   document.querySelector('#lifetime-earned').textContent = money(state.totalEarned);
   document.querySelector('#run-count').textContent = String(Math.max(1, Math.floor(state.totalEarned / 10000) + 1)).padStart(3, '0');
 }
@@ -88,9 +98,11 @@ function clickSound() {
 
 function renderClickers() {
   const cost = 10 * (state.upgrades + 1);
+  const superButtonCost = 500 * (state.superButtons + 1);
   panel.innerHTML = `<p class="section-kicker">UPGRADE YOUR CLICK / ${String(state.upgrades + 1).padStart(2, '0')}</p>
     <article class="upgrade-row"><span class="item-icon" aria-hidden="true">↗</span><div class="item-copy"><h2>Better button</h2><p>Earn one extra cent with every click. Level ${state.upgrades} owned.</p></div><button class="buy-button" id="buy-clicker" type="button" ${state.balance < cost ? 'disabled' : ''}>${money(cost)}<br>BUY</button></article>
-    <p class="empty-note">A stronger click is the simplest way to get ahead. Your current boost is <strong>${money(state.clickPower * placeMultiplier())}</strong> per click.</p>`;
+    <article class="upgrade-row"><span class="item-icon" aria-hidden="true">●</span><div class="item-copy"><h2>Super Button</h2><p>Produces $0.20 per second. Place boosts can increase production.</p></div><button class="buy-button" id="buy-super-button" type="button" ${state.balance < superButtonCost ? 'disabled' : ''}>${money(superButtonCost)}<br>BUY</button></article>
+    <p class="empty-note">Your current click earns <strong>${money(state.clickPower * placeMultiplier())}</strong>. Super Buttons add passive income.</p>`;
   document.querySelector('#buy-clicker').addEventListener('click', () => {
     if (state.balance < cost) return;
     state.balance -= cost;
@@ -99,24 +111,42 @@ function renderClickers() {
     save();
     render();
   });
+  document.querySelector('#buy-super-button').addEventListener('click', () => {
+    if (state.balance < superButtonCost) return;
+    state.balance -= superButtonCost;
+    state.superButtons += 1;
+    save();
+    render();
+  });
 }
 
 function renderHelpers() {
-  const cost = 50 * (state.helpers + 1);
-  panel.innerHTML = `<p class="section-kicker">YOUR LITTLE WORKFORCE / ${String(state.helpers).padStart(2, '0')} HIRED</p>
-    <article class="upgrade-row"><span class="item-icon" aria-hidden="true">✳</span><div class="item-copy"><h2>Helpful friend</h2><p>Earn one cent every second. Cost rises with each hire.</p></div><button class="buy-button" id="hire-helper" type="button" ${state.balance < cost ? 'disabled' : ''}>${money(cost)}<br>HIRE</button></article>
-    <p class="empty-note">${state.helpers ? `${state.helpers} helper${state.helpers === 1 ? '' : 's'} earning ${money(state.helpers * placeMultiplier())} every second.` : 'Helpers keep the money coming while your hands are busy elsewhere.'}</p>`;
-  document.querySelector('#hire-helper').addEventListener('click', () => {
-    if (state.balance < cost) return;
-    state.balance -= cost;
-    state.helpers += 1;
+  const poorMinerCost = 50 * (state.poorMiners + 1);
+  const budgetMinerCost = 2000 * (state.budgetMiners + 1);
+  panel.innerHTML = `<p class="section-kicker">YOUR LITTLE WORKFORCE / ${String(state.poorMiners + state.budgetMiners).padStart(2, '0')} HIRED</p>
+    <article class="upgrade-row"><span class="item-icon" aria-hidden="true">₿</span><div class="item-copy"><h2>Very Poor Bitcoin Miner</h2><p>Earns $0.01 per second. Each one has a 0.1% chance each second to find $100.</p></div><button class="buy-button" id="hire-poor-miner" type="button" ${state.balance < poorMinerCost ? 'disabled' : ''}>${money(poorMinerCost)}<br>HIRE</button></article>
+    <article class="upgrade-row"><span class="item-icon" aria-hidden="true">₿</span><div class="item-copy"><h2>Slightly Budgeted Bitcoin Miner</h2><p>Earns $1.00 per second. First miner costs $20.00.</p></div><button class="buy-button" id="hire-budget-miner" type="button" ${state.balance < budgetMinerCost ? 'disabled' : ''}>${money(budgetMinerCost)}<br>HIRE</button></article>
+    <p class="empty-note">${state.poorMiners + state.budgetMiners ? `${state.poorMiners} poor and ${state.budgetMiners} budget miner${state.poorMiners + state.budgetMiners === 1 ? '' : 's'} earning ${money((state.poorMiners + state.budgetMiners * 100) * placeMultiplier())} per second, plus jackpot chances.` : 'Hire miners to bring in cash while you do something else.'}</p>`;
+  document.querySelector('#hire-poor-miner').addEventListener('click', () => {
+    if (state.balance < poorMinerCost) return;
+    state.balance -= poorMinerCost;
+    state.poorMiners += 1;
+    save();
+    render();
+  });
+  document.querySelector('#hire-budget-miner').addEventListener('click', () => {
+    if (state.balance < budgetMinerCost) return;
+    state.balance -= budgetMinerCost;
+    state.budgetMiners += 1;
     save();
     render();
   });
 }
 
 function renderAchievements() {
-  const progressFor = (item) => item.key === 'garage' ? Number(state.places.includes('garage')) : state[item.key] || 0;
+  const progressFor = (item) => item.key === 'garage'
+    ? Number(state.places.includes('garage'))
+    : item.key === 'helpers' ? state.poorMiners + state.budgetMiners : state[item.key] || 0;
   const completed = achievements.filter((item) => progressFor(item) >= item.goal).length;
   panel.innerHTML = `<p class="section-kicker">MILESTONES / ${completed} OF ${achievements.length} COMPLETE</p>${achievements.map((item) => {
     const progress = Math.min(progressFor(item), item.goal);
@@ -179,8 +209,12 @@ function renderPanel() {
 function updatePurchaseButtons() {
   const clicker = document.querySelector('#buy-clicker');
   if (clicker) clicker.disabled = state.balance < 10 * (state.upgrades + 1);
-  const helper = document.querySelector('#hire-helper');
-  if (helper) helper.disabled = state.balance < 50 * (state.helpers + 1);
+  const superButton = document.querySelector('#buy-super-button');
+  if (superButton) superButton.disabled = state.balance < 500 * (state.superButtons + 1);
+  const poorMiner = document.querySelector('#hire-poor-miner');
+  if (poorMiner) poorMiner.disabled = state.balance < 50 * (state.poorMiners + 1);
+  const budgetMiner = document.querySelector('#hire-budget-miner');
+  if (budgetMiner) budgetMiner.disabled = state.balance < 2000 * (state.budgetMiners + 1);
   panel.querySelectorAll('[data-unlock]').forEach((button) => {
     const place = places.find((item) => item.id === button.dataset.unlock);
     button.disabled = state.totalEarned < place.threshold;
@@ -224,7 +258,22 @@ document.addEventListener('keydown', (event) => {
   moneyButton.click();
 });
 window.setInterval(() => {
-  if (state.helpers) earn(state.helpers * placeMultiplier());
+  const minersAndButtons = state.poorMiners + state.budgetMiners + state.superButtons;
+  if (!minersAndButtons) return;
+  let jackpots = 0;
+  for (let miner = 0; miner < state.poorMiners; miner += 1) {
+    if (Math.random() < 0.001) jackpots += 1;
+  }
+  const regularIncome = incomePerSecond();
+  earn(regularIncome + jackpots * 10000);
+  if (jackpots) {
+    const saveStatus = document.querySelector('#save-status');
+    const message = `MINER JACKPOT +${money(jackpots * 10000)}`;
+    saveStatus.textContent = message;
+    window.setTimeout(() => {
+      if (saveStatus.textContent === message) saveStatus.textContent = 'GAME SAVED';
+    }, 3500);
+  }
 }, 1000);
 
 render();
