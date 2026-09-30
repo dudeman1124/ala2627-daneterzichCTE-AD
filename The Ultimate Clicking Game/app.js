@@ -290,9 +290,9 @@ window.setInterval(() => {
   if (!miners) return;
   let jackpots = 0;
   for (let miner = 0; miner < state.poorMiners; miner += 1) {
-    if (Math.random() < 0.001) jackpots += 1;
+    if (Math.random() < 1 - Math.pow(0.999, 0.1)) jackpots += 1;
   }
-  const regularIncome = incomePerSecond();
+  const regularIncome = incomePerSecond() / 10;
   earn(regularIncome + jackpots * 10000);
   if (jackpots) {
     const saveStatus = document.querySelector('#save-status');
@@ -302,6 +302,6 @@ window.setInterval(() => {
       if (saveStatus.textContent === message) saveStatus.textContent = 'GAME SAVED';
     }, 3500);
   }
-}, 1000);
+}, 100);
 
 render();
