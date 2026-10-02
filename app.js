@@ -33,6 +33,8 @@ const projectDirectories = new Map([
   ['dt-gpt', 'DT-GPT'],
   ['smoke-detector', 'smoke-detector'],
   ['3d space', '3D Space'],
+  ["anything's a secret", "Anything's A Secret"],
+  ['anything secret', "Anything's A Secret"],
   ['assignments/01-this-is-me', 'assignments/01-this-is-me']
 ]);
 

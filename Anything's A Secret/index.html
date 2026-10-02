@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a17">
+  <meta name="description" content="Step into Anything's A Secret, an immersive first-person puzzle world.">
+  <title>Anything's A Secret</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <main class="game-shell">
+    <canvas id="world" aria-label="Three-dimensional green world and stone welcome platform"></canvas>
+
+    <header class="topbar">
+      <a class="back-link" href="../">DT / PROJECTS</a>
+      <p class="world-status"><span></span> THE WORLD IS QUIET</p>
+    </header>
+
+    <section class="world-heading" aria-label="Game title">
+      <p class="eyebrow">AN OPEN WORLD / A CLOSED SECRET</p>
+      <h1>Anything's <em>A Secret</em></h1>
+    </section>
+
+    <div class="map-label" aria-label="Map dimensions">
+      <span>THE MEADOW</span>
+      <span>2,000 × 2,000 FT</span>
+    </div>
+
+    <div class="control-chip" aria-label="Movement controls">
+      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
+      <span>MOVE</span>
+      <i></i>
+      <kbd>SPACE</kbd><span>JUMP</span>
+    </div>
+
+    <button id="mouse-toggle" class="mouse-toggle" type="button" aria-pressed="false">
+      <span class="mouse-dot"></span>
+      <span id="mouse-label">MOUSE FREE</span>
+      <kbd>;</kbd>
+    </button>
+
+    <form id="password-form" class="password-card">
+      <label for="password-input">FOUND A CLUE?</label>
+      <div class="password-row">
+        <input id="password-input" name="password" type="text" placeholder="Enter a secret phrase" autocomplete="off"
+          spellcheck="false" aria-describedby="password-hint">
+        <button type="submit" aria-label="Check secret phrase">↗</button>
+      </div>
+      <p id="password-hint">The world keeps what you type.</p>
+    </form>
+
+    <p id="secret-count" class="secret-count" aria-live="polite">SECRETS FOUND &nbsp; 0</p>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <section id="start-screen" class="start-screen" aria-labelledby="start-title">
+      <div class="start-card">
+        <p class="eyebrow">A WORLD MADE FOR WANDERING</p>
+        <h2 id="start-title">Some things are<br><em>better discovered.</em></h2>
+        <p>Look around. Follow your curiosity. The first clue may be closer than it seems.</p>
+        <button id="enter-world" type="button">STEP INTO THE WORLD <span>→</span></button>
+        <div class="start-controls">
+          <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> WALK</span>
+          <span><kbd>SPACE</kbd> JUMP</span>
+          <span><kbd>;</kbd> FREE MOUSE</span>
+        </div>
+        <p id="start-status" class="start-status" role="status"></p>
+      </div>
+    </section>
+
+    <footer class="bottom-note">
+      <span>MOVE WITH WASD <i>·</i> JUMP WITH SPACE <i>·</i> PRESS ; TO FREE YOUR CURSOR</span>
+      <span>YOU ARE HERE <b>●</b></span>
+    </footer>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+
+</html>
