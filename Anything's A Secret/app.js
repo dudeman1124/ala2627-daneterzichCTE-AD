@@ -451,8 +451,8 @@ const fireMaterial = new THREE.MeshStandardMaterial({
   emissiveIntensity: 1.8,
   roughness: 0.45
 });
-addBlock(2, 31.5, 10, chimneyMaterial,
-  [houseMaxX - 1.2, house.floorHeight + 15.75, house.centerZ]);
+addBlock(2, 26, 10, chimneyMaterial,
+  [houseMaxX - 1.2, house.floorHeight + 13, house.centerZ]);
 addBlock(4.8, 0.38, 4.6, houseTrimMaterial,
   [houseMaxX - 1.2, houseWallTop + 0.18, house.centerZ]);
 
