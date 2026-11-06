@@ -792,7 +792,7 @@ function createWordSprite(text, options = {}) {
 }
 
 const sunGlow = new THREE.Mesh(
-  new THREE.SphereGeometry(11.5, 36, 36),
+  new THREE.SphereGeometry(34.5, 36, 36),
   new THREE.MeshBasicMaterial({ color: '#ffd778', transparent: true, opacity: 0.96 })
 );
 sunGlow.position.set(68, 34, -130);
@@ -802,13 +802,13 @@ const sunWord = createWordSprite('sunc0d3', {
   fillStyle: 'rgba(255, 187, 89, 0.52)',
   font: '700 220px Georgia, serif',
   opacity: 0.7,
-  scale: [14, 4.8, 1]
+  scale: [42, 14.4, 1]
 });
 sunWord.position.set(68, 34, -118.5);
 scene.add(sunWord);
 
 const moon = new THREE.Mesh(
-  new THREE.SphereGeometry(10, 32, 24),
+  new THREE.SphereGeometry(30, 32, 24),
   new THREE.MeshBasicMaterial({ color: '#b9c3cf' })
 );
 moon.position.set(68, 34, -130);
@@ -819,7 +819,7 @@ const moonWord = createWordSprite('FU11M00N', {
   fillStyle: 'rgba(125, 139, 154, 0.58)',
   font: '700 190px Georgia, serif',
   opacity: 0.56,
-  scale: [14, 4.2, 1]
+  scale: [42, 12.6, 1]
 });
 moonWord.position.set(68, 34, -118.5);
 moonWord.visible = false;
@@ -827,25 +827,14 @@ scene.add(moonWord);
 
 const crossGroup = new THREE.Group();
 const crossMaterial = new THREE.MeshStandardMaterial({
-  color: '#d8d2c5',
-  metalness: 0.82,
-  roughness: 0.25,
-  emissive: '#3a342d',
-  emissiveIntensity: 0.25
+  color: '#705037',
+  roughness: 0.88
 });
-const crossStem = new THREE.Mesh(new THREE.BoxGeometry(1.8, 13, 1.8), crossMaterial);
-crossStem.position.y = 6.5;
-const crossArm = new THREE.Mesh(new THREE.BoxGeometry(7.5, 1.8, 1.8), crossMaterial);
-crossArm.position.y = 12.1;
-const crossCore = new THREE.Mesh(new THREE.SphereGeometry(1.3, 24, 20), new THREE.MeshStandardMaterial({
-  color: '#f2d38d',
-  emissive: '#4a3a17',
-  emissiveIntensity: 0.45,
-  metalness: 0.72,
-  roughness: 0.28
-}));
-crossCore.position.y = 13.2;
-crossGroup.add(crossStem, crossArm, crossCore);
+const crossStem = new THREE.Mesh(new THREE.BoxGeometry(1.6, 14, 1.6), crossMaterial);
+crossStem.position.y = 7;
+const crossArm = new THREE.Mesh(new THREE.BoxGeometry(7.5, 1.5, 1.6), crossMaterial);
+crossArm.position.y = 9.6;
+crossGroup.add(crossStem, crossArm);
 crossGroup.position.set(0, 0.35, -50);
 scene.add(crossGroup);
 
@@ -1077,14 +1066,14 @@ const passwordIndex = [
     title: 'Addition',
     description: "You got bored, didn't you?",
     id: '45',
-    rank: 'Surface'
+    rank: 'Easy'
   },
   {
     phrase: '362880',
     title: 'Multiplication',
     description: "You got bored, didn't you? (chapter 2)",
     id: '362880',
-    rank: 'Surface'
+    rank: 'Easy'
   },
   {
     phrase: 'sunc0d3',
@@ -1137,14 +1126,47 @@ const passwordIndex = [
   }
 ];
 const passwordSecrets = new Map(passwordIndex.filter(({ phrase }) => phrase).map(({ phrase, id }) => [phrase, id]));
-const crossRadius = 10;
+const crossRadius = 50;
+const celestialOrbitRadius = 420;
+const celestialOrbitAnchor = new THREE.Vector3(player.position.x, platformTop, player.position.z);
+const celestialOrbitDepth = celestialOrbitAnchor.z;
+const celestialLabelDepth = celestialOrbitDepth + 36;
+const idleCelestialSpinSpeed = 0.18 / 20;
 const madeInHeavenDurationMs = 30000;
 const madeInHeavenPhrase = 'madeinheaven';
 let timeOfDay = 'day';
 let activeStarPhrase = null;
+let celestialOrbitAngle = 0;
 let madeInHeavenActive = false;
+let madeInHeavenActivated = false;
 let madeInHeavenStartedAt = 0;
-let madeInHeavenCycleClock = 0;
+
+function updateCelestialPositions() {
+  const xOffset = Math.cos(celestialOrbitAngle) * celestialOrbitRadius;
+  const yOffset = Math.sin(celestialOrbitAngle) * celestialOrbitRadius;
+  const x = celestialOrbitAnchor.x + xOffset;
+  const y = celestialOrbitAnchor.y + yOffset;
+  const oppositeX = celestialOrbitAnchor.x - xOffset;
+  const oppositeY = celestialOrbitAnchor.y - yOffset;
+
+  sunGlow.position.set(x, y, celestialOrbitDepth);
+  sunWord.position.set(x, y, celestialLabelDepth);
+  moon.position.set(oppositeX, oppositeY, celestialOrbitDepth);
+  moonWord.position.set(oppositeX, oppositeY, celestialLabelDepth);
+  sun.position.set(x, y + 76, celestialOrbitDepth);
+}
+
+function advanceCelestialOrbit(delta, speed) {
+  const previousHalf = Math.floor(celestialOrbitAngle / Math.PI);
+  celestialOrbitAngle += delta * speed;
+  const currentHalf = Math.floor(celestialOrbitAngle / Math.PI);
+
+  updateCelestialPositions();
+  if (currentHalf !== previousHalf) {
+    timeOfDay = currentHalf % 2 === 0 ? 'day' : 'night';
+    updateWorldSettings();
+  }
+}
 
 function updateWorldSettings() {
   const isNight = timeOfDay === 'night';
@@ -1178,50 +1200,54 @@ function updateWorldSettings() {
 function activateMadeInHeaven() {
   if (madeInHeavenActive) return;
   madeInHeavenActive = true;
+  madeInHeavenActivated = true;
   madeInHeavenStartedAt = performance.now();
-  madeInHeavenCycleClock = 0;
+  celestialOrbitAngle = 0;
   timeOfDay = 'day';
+  updateCelestialPositions();
   updateWorldSettings();
   showToast('Made In Heaven');
 }
 
 function updateMadeInHeavenEffect(delta) {
   if (!madeInHeavenActive) {
-    sun.rotation.y += delta * 0.18;
-    moon.rotation.y += delta * 0.18;
+    advanceCelestialOrbit(delta, idleCelestialSpinSpeed);
+    sunGlow.rotation.y += delta * idleCelestialSpinSpeed;
+    moon.rotation.y -= delta * idleCelestialSpinSpeed;
     return;
   }
 
   const elapsedMs = performance.now() - madeInHeavenStartedAt;
   if (elapsedMs >= madeInHeavenDurationMs) {
     madeInHeavenActive = false;
-    timeOfDay = 'day';
+    timeOfDay = Math.floor(celestialOrbitAngle / Math.PI) % 2 === 0 ? 'day' : 'night';
     updateWorldSettings();
     showToast('The heavens reset.');
     return;
   }
 
-  const phaseSpeed = Math.pow(1.5, elapsedMs / 9000);
-  madeInHeavenCycleClock += delta * phaseSpeed;
-
+  const phaseSpeed = Math.pow(2.25, elapsedMs / 9000);
   const spinSpeed = 1.2 * phaseSpeed + 0.8;
-  sun.rotation.y += delta * spinSpeed;
-  moon.rotation.y += delta * spinSpeed;
-
-  if (madeInHeavenCycleClock >= 6) {
-    madeInHeavenCycleClock = 0;
-    timeOfDay = timeOfDay === 'day' ? 'night' : 'day';
-    updateWorldSettings();
-  }
+  advanceCelestialOrbit(delta, spinSpeed);
+  sunGlow.rotation.y += delta * spinSpeed;
+  moon.rotation.y -= delta * spinSpeed;
 }
 
 for (const input of timeOfDayInputs) {
   input.addEventListener('change', () => {
+    const currentHalf = Math.floor(celestialOrbitAngle / Math.PI);
+    const isCurrentNight = currentHalf % 2 !== 0;
+    const isRequestedNight = input.value === 'night';
+    if (isCurrentNight !== isRequestedNight) {
+      celestialOrbitAngle += Math.PI;
+      updateCelestialPositions();
+    }
     timeOfDay = input.value;
     updateWorldSettings();
   });
 }
 
+updateCelestialPositions();
 updateWorldSettings();
 
 function renderPasswordIndex(rank = activePasswordRank) {
@@ -1512,7 +1538,7 @@ passwordForm.addEventListener('submit', (event) => {
     return;
   }
 
-  if (phrase === 'enricopucci' && !madeInHeavenActive) {
+  if (phrase === 'enricopucci' && !madeInHeavenActivated) {
     passwordInput.setAttribute('aria-invalid', 'true');
     passwordHint.textContent = 'The world is not ready for that name yet.';
     return;
