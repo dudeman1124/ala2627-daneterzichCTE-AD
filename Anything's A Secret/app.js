@@ -86,6 +86,16 @@ const houseMaxX = house.centerX + house.width / 2;
 const houseMinZ = house.centerZ - house.depth / 2;
 const houseMaxZ = house.centerZ + house.depth / 2;
 const houseWallTop = house.floorHeight + house.wallHeight;
+const upperFloorThickness = 0.5;
+const upperFloorTop = houseWallTop + upperFloorThickness;
+const upperWallTop = upperFloorTop + house.wallHeight;
+const stairwell = {
+  centerX: house.centerX + 12,
+  startZ: house.centerZ + 4,
+  endZ: house.centerZ + 22,
+  width: 5.8,
+  stepCount: 10
+};
 
 const random = seededRandom(263701);
 const grassCount = 4200;
@@ -222,7 +232,7 @@ function addHouseWallPanel(axis, fixed, start, end, bottom, top) {
   addBlock(...dimensions, houseWallMaterial, position);
 }
 
-function addHouseWall(axis, fixed, start, end, openings = []) {
+function addHouseWall(axis, fixed, start, end, openings = [], bottom = house.floorHeight, top = houseWallTop) {
   const horizontalCuts = [start, end];
   for (const opening of openings) {
     horizontalCuts.push(opening.center - opening.width / 2, opening.center + opening.width / 2);
@@ -240,7 +250,7 @@ function addHouseWall(axis, fixed, start, end, openings = []) {
       segmentCenter > opening.center - opening.width / 2 &&
       segmentCenter < opening.center + opening.width / 2
     );
-    const verticalCuts = [house.floorHeight, houseWallTop];
+    const verticalCuts = [bottom, top];
     for (const opening of segmentOpenings) verticalCuts.push(opening.bottom, opening.top);
     verticalCuts.sort((left, right) => left - right);
 
@@ -324,6 +334,85 @@ for (const center of [-13, 13]) {
   addHouseWindow('x', houseMaxZ, house.centerX + center, windowWidth, windowBottom, windowHeight);
 }
 
+const upperFloorMaterial = new THREE.MeshStandardMaterial({ color: '#765d48', roughness: 0.88 });
+const upperFloorY = houseWallTop + upperFloorThickness / 2;
+const floorMinX = houseMinX + 0.5;
+const floorMaxX = houseMaxX - 0.5;
+const floorMinZ = houseMinZ + 0.5;
+const floorMaxZ = houseMaxZ - 0.5;
+const stairLeft = stairwell.centerX - stairwell.width / 2 - 0.25;
+const stairRight = stairwell.centerX + stairwell.width / 2 + 0.25;
+const stairOpeningStart = stairwell.startZ - 0.3;
+const stairOpeningEnd = stairwell.endZ + 0.3;
+
+addBlock(floorMaxX - floorMinX, upperFloorThickness, stairOpeningStart - floorMinZ, upperFloorMaterial,
+  [(floorMinX + floorMaxX) / 2, upperFloorY, (floorMinZ + stairOpeningStart) / 2]);
+addBlock(floorMaxX - floorMinX, upperFloorThickness, floorMaxZ - stairOpeningEnd, upperFloorMaterial,
+  [(floorMinX + floorMaxX) / 2, upperFloorY, (stairOpeningEnd + floorMaxZ) / 2]);
+addBlock(stairLeft - floorMinX, upperFloorThickness, stairOpeningEnd - stairOpeningStart, upperFloorMaterial,
+  [(floorMinX + stairLeft) / 2, upperFloorY, (stairOpeningStart + stairOpeningEnd) / 2]);
+addBlock(floorMaxX - stairRight, upperFloorThickness, stairOpeningEnd - stairOpeningStart, upperFloorMaterial,
+  [(stairRight + floorMaxX) / 2, upperFloorY, (stairOpeningStart + stairOpeningEnd) / 2]);
+
+const upperWindowBottom = upperFloorTop + 3.5;
+const upperWindowOpenings = [-13, 13].map((center) => ({
+  center: house.centerZ + center,
+  width: windowWidth,
+  bottom: upperWindowBottom,
+  top: upperWindowBottom + windowHeight
+}));
+const upperSideOpenings = [-13, 13].map((center) => ({
+  center: house.centerX + center,
+  width: windowWidth,
+  bottom: upperWindowBottom,
+  top: upperWindowBottom + windowHeight
+}));
+
+addHouseWall('z', houseMinX, houseMinZ, houseMaxZ, upperWindowOpenings, upperFloorTop, upperWallTop);
+addHouseWall('z', houseMaxX, houseMinZ, houseMaxZ, upperWindowOpenings, upperFloorTop, upperWallTop);
+addHouseWall('x', houseMinZ, houseMinX, houseMaxX, upperSideOpenings, upperFloorTop, upperWallTop);
+addHouseWall('x', houseMaxZ, houseMinX, houseMaxX, upperSideOpenings, upperFloorTop, upperWallTop);
+
+for (const center of [-13, 13]) {
+  addHouseWindow('z', houseMinX, house.centerZ + center, windowWidth, upperWindowBottom, windowHeight);
+  addHouseWindow('z', houseMaxX, house.centerZ + center, windowWidth, upperWindowBottom, windowHeight);
+  addHouseWindow('x', houseMinZ, house.centerX + center, windowWidth, upperWindowBottom, windowHeight);
+  addHouseWindow('x', houseMaxZ, house.centerX + center, windowWidth, upperWindowBottom, windowHeight);
+}
+
+const stairTreadDepth = (stairwell.endZ - stairwell.startZ) / stairwell.stepCount;
+const stairRise = (upperFloorTop - house.floorHeight) / stairwell.stepCount;
+const stairMaterial = new THREE.MeshStandardMaterial({ color: '#79543c', roughness: 0.78 });
+for (let index = 0; index < stairwell.stepCount; index += 1) {
+  const stepHeight = stairRise * (index + 1);
+  addBlock(stairwell.width - 0.6, stepHeight, stairTreadDepth + 0.04, stairMaterial,
+    [stairwell.centerX, house.floorHeight + stepHeight / 2, stairwell.startZ + stairTreadDepth * (index + 0.5)]);
+}
+
+const upperCeilingFixtureMaterial = new THREE.MeshStandardMaterial({
+  color: '#d8c49a',
+  emissive: '#f7d9a1',
+  emissiveIntensity: 0.35,
+  roughness: 0.58
+});
+const upperCeilingBulbMaterial = new THREE.MeshBasicMaterial({ color: '#fff1d2' });
+for (const [offsetX, offsetZ] of [[-14, -14], [14, -14], [-14, 14], [14, 14]]) {
+  const fixtureX = house.centerX + offsetX;
+  const fixtureY = upperFloorTop + 9.8;
+  const fixtureZ = house.centerZ + offsetZ;
+  const fixture = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.6, 0.16, 16), upperCeilingFixtureMaterial);
+  fixture.position.set(fixtureX, fixtureY + 0.12, fixtureZ);
+  scene.add(fixture);
+
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.17, 12, 10), upperCeilingBulbMaterial);
+  bulb.position.set(fixtureX, fixtureY - 0.08, fixtureZ);
+  scene.add(bulb);
+
+  const interiorLight = new THREE.PointLight('#ffe2b6', 22, 36, 1.5);
+  interiorLight.position.set(fixtureX, fixtureY - 0.18, fixtureZ);
+  scene.add(interiorLight);
+}
+
 const gableShape = new THREE.Shape();
 gableShape.moveTo(0, 0);
 gableShape.lineTo(house.width, 0);
@@ -336,7 +425,7 @@ for (const z of [houseMinZ - 0.37, houseMaxZ + 0.37]) {
     roughness: 0.88,
     side: THREE.DoubleSide
   }));
-  gable.position.set(houseMinX, houseWallTop, z);
+  gable.position.set(houseMinX, upperWallTop, z);
   gable.castShadow = true;
   gable.receiveShadow = true;
   scene.add(gable);
@@ -347,10 +436,10 @@ const roofRise = 4.5;
 const roofAngle = Math.atan2(roofRise, roofRun);
 const roofLength = Math.hypot(roofRun, roofRise) + 1.2;
 const leftRoof = addBlock(roofLength, 0.62, house.depth + 1.8, houseRoofMaterial,
-  [house.centerX - roofRun / 2, houseWallTop + roofRise / 2, house.centerZ]);
+  [house.centerX - roofRun / 2, upperWallTop + roofRise / 2, house.centerZ]);
 leftRoof.rotation.z = roofAngle;
 const rightRoof = addBlock(roofLength, 0.62, house.depth + 1.8, houseRoofMaterial,
-  [house.centerX + roofRun / 2, houseWallTop + roofRise / 2, house.centerZ]);
+  [house.centerX + roofRun / 2, upperWallTop + roofRise / 2, house.centerZ]);
 rightRoof.rotation.z = -roofAngle;
 
 const chimneyMaterial = new THREE.MeshStandardMaterial({ color: '#a84a40', roughness: 0.9 });
@@ -362,8 +451,8 @@ const fireMaterial = new THREE.MeshStandardMaterial({
   emissiveIntensity: 1.8,
   roughness: 0.45
 });
-addBlock(2, 12.2, 10, chimneyMaterial,
-  [houseMaxX - 1.2, house.floorHeight + 6.1, house.centerZ]);
+addBlock(2, 31.5, 10, chimneyMaterial,
+  [houseMaxX - 1.2, house.floorHeight + 15.75, house.centerZ]);
 addBlock(4.8, 0.38, 4.6, houseTrimMaterial,
   [houseMaxX - 1.2, houseWallTop + 0.18, house.centerZ]);
 
@@ -634,6 +723,26 @@ for (const x of [house.centerX + 9.6, house.centerX + 12.4]) {
   }
 }
 
+const diningTableCenter = new THREE.Vector3(house.centerX - 10.5, house.floorHeight, house.centerZ + 3.5);
+addBlock(7.4, 0.34, 4.8, tableMaterial,
+  [diningTableCenter.x, diningTableCenter.y + 2.65, diningTableCenter.z]);
+for (const x of [diningTableCenter.x - 3.1, diningTableCenter.x + 3.1]) {
+  for (const z of [diningTableCenter.z - 1.75, diningTableCenter.z + 1.75]) {
+    addBlock(0.24, 2.45, 0.24, tableMaterial, [x, diningTableCenter.y + 1.225, z]);
+  }
+}
+
+const chairMaterial = new THREE.MeshStandardMaterial({ color: '#654631', roughness: 0.82 });
+for (const [x, z, backX, backZ] of [
+  [diningTableCenter.x - 5, diningTableCenter.z, diningTableCenter.x - 5.75, diningTableCenter.z],
+  [diningTableCenter.x + 5, diningTableCenter.z, diningTableCenter.x + 5.75, diningTableCenter.z],
+  [diningTableCenter.x, diningTableCenter.z - 3.6, diningTableCenter.x, diningTableCenter.z - 4.35],
+  [diningTableCenter.x, diningTableCenter.z + 3.6, diningTableCenter.x, diningTableCenter.z + 4.35]
+]) {
+  addBlock(1.5, 0.38, 1.5, chairMaterial, [x, diningTableCenter.y + 1.25, z]);
+  addBlock(1.5, 1.7, 0.22, chairMaterial, [backX, diningTableCenter.y + 2.1, backZ]);
+}
+
 const fridgeWidth = 3.6;
 const fridgeHeight = 6.25;
 const fridgeDepth = 3.7;
@@ -716,6 +825,48 @@ addFridgeBox(fridgeWidth - 0.3, 3.75, 0.2, fridgeDoorMaterial,
 addFridgeBox(0.14, 0.9, 0.22, houseTrimMaterial,
   [fridgeWidth - 0.58, 2.03, 0.13], fridgeDoorPivot);
 let fridgeDoorOpen = false;
+
+const kitchenCenterX = house.centerX - 4.2;
+const kitchenCenterZ = houseMinZ + 3.1;
+const kitchenCabinetMaterial = new THREE.MeshStandardMaterial({ color: '#647a68', roughness: 0.84 });
+const kitchenCounterMaterial = new THREE.MeshStandardMaterial({ color: '#c4c1b4', roughness: 0.36 });
+const kitchenMetalMaterial = new THREE.MeshStandardMaterial({ color: '#b2bdba', metalness: 0.66, roughness: 0.3 });
+const kitchenBlackMaterial = new THREE.MeshStandardMaterial({ color: '#242a29', roughness: 0.4 });
+const kitchenWidth = 8.2;
+const kitchenDepth = 3.8;
+
+addBlock(kitchenWidth, 2.24, kitchenDepth, kitchenCabinetMaterial,
+  [kitchenCenterX, house.floorHeight + 1.12, kitchenCenterZ]);
+addBlock(kitchenWidth + 0.25, 0.32, kitchenDepth + 0.25, kitchenCounterMaterial,
+  [kitchenCenterX, house.floorHeight + 2.42, kitchenCenterZ]);
+
+for (const x of [kitchenCenterX - 2.75, kitchenCenterX, kitchenCenterX + 2.75]) {
+  addBlock(2.55, 2.7, 1.15, kitchenCabinetMaterial,
+    [x, house.floorHeight + 7.45, houseMinZ + 1.05]);
+  addBlock(2.25, 2.35, 0.12, kitchenCounterMaterial,
+    [x, house.floorHeight + 7.45, houseMinZ + 1.67]);
+}
+addBlock(kitchenWidth, 2.35, 0.22, kitchenCabinetMaterial,
+  [kitchenCenterX, house.floorHeight + 4.15, houseMinZ + 0.28]);
+
+const sinkX = kitchenCenterX - 2.55;
+addBlock(1.9, 0.12, 1.6, kitchenMetalMaterial,
+  [sinkX, house.floorHeight + 2.64, kitchenCenterZ]);
+addBlock(1.55, 0.09, 1.25, kitchenBlackMaterial,
+  [sinkX, house.floorHeight + 2.71, kitchenCenterZ]);
+addBlock(0.12, 0.32, 0.12, kitchenMetalMaterial,
+  [sinkX + 0.38, house.floorHeight + 2.98, kitchenCenterZ - 0.42]);
+
+const cooktopX = kitchenCenterX + 1.45;
+addBlock(2.5, 0.1, 2.4, kitchenBlackMaterial,
+  [cooktopX, house.floorHeight + 2.66, kitchenCenterZ]);
+for (const x of [cooktopX - 0.62, cooktopX + 0.62]) {
+  for (const z of [kitchenCenterZ - 0.58, kitchenCenterZ + 0.58]) {
+    const burner = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.08, 16), kitchenMetalMaterial);
+    burner.position.set(x, house.floorHeight + 2.76, z);
+    scene.add(burner);
+  }
+}
 
 const portraitFrameMaterial = new THREE.MeshStandardMaterial({ color: '#423126', roughness: 0.62 });
 const portraitFrameX = houseMaxX - 0.36;
@@ -1582,7 +1733,19 @@ function isNearCross() {
 
 function groundHeightAt(x, z) {
   const insideHouse = x > houseMinX && x < houseMaxX && z > houseMinZ && z < houseMaxZ;
-  if (insideHouse) return house.floorHeight;
+  if (insideHouse) {
+    const feetHeight = player.position.y - eyeHeight;
+    const insideStairwell = x >= stairwell.centerX - stairwell.width / 2 &&
+      x <= stairwell.centerX + stairwell.width / 2 && z >= stairwell.startZ && z <= stairwell.endZ;
+
+    if (insideStairwell) {
+      const progress = (z - stairwell.startZ) / (stairwell.endZ - stairwell.startZ);
+      const stairHeight = house.floorHeight + (upperFloorTop - house.floorHeight) * progress;
+      return feetHeight >= stairHeight - 0.72 ? stairHeight : house.floorHeight;
+    }
+
+    return feetHeight >= upperFloorTop - 0.05 ? upperFloorTop : house.floorHeight;
+  }
 
   const platformHalfWidth = platformWidth / 2 - 0.18;
   return Math.abs(x) < platformHalfWidth && Math.abs(z) < platformHalfWidth ? platformTop : 0;
@@ -1610,7 +1773,9 @@ function collidesWithStructure(x, z) {
 
 function canReachGroundAt(x, z) {
   const feetHeight = player.position.y - eyeHeight;
-  return groundHeightAt(x, z) <= feetHeight + 0.04;
+  const insideStairwell = x >= stairwell.centerX - stairwell.width / 2 &&
+    x <= stairwell.centerX + stairwell.width / 2 && z >= stairwell.startZ && z <= stairwell.endZ;
+  return groundHeightAt(x, z) <= feetHeight + (insideStairwell ? 0.72 : 0.04);
 }
 
 function resize() {
