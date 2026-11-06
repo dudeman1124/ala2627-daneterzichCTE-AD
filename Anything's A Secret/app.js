@@ -4,6 +4,10 @@ const canvas = document.querySelector('#world');
 const startScreen = document.querySelector('#start-screen');
 const enterButton = document.querySelector('#enter-world');
 const startStatus = document.querySelector('#start-status');
+const loadingPanel = document.querySelector('.world-loading');
+const loadingProgress = document.querySelector('#loading-progress');
+const loadingProgressFill = document.querySelector('#loading-progress-fill');
+const loadingPercent = document.querySelector('#loading-percent');
 const settingsPanel = document.querySelector('#settings-panel');
 const closeSettingsButton = document.querySelector('#close-settings');
 const remotePanel = document.querySelector('#remote-panel');
@@ -25,6 +29,26 @@ const passwordIndexToggle = document.querySelector('#password-index-toggle');
 const passwordIndexPanel = document.querySelector('#password-index-panel');
 const passwordFilters = document.querySelector('#password-filters');
 const passwordList = document.querySelector('#password-list');
+const worldLoadingManager = new THREE.LoadingManager();
+const failedWorldAssets = [];
+let resolveWorldAssetsLoaded;
+const worldAssetsLoaded = new Promise((resolve) => {
+  resolveWorldAssetsLoaded = resolve;
+});
+
+function setLoadingProgress(percent, message) {
+  const progress = Math.round(THREE.MathUtils.clamp(percent, 0, 100));
+  loadingProgress.setAttribute('aria-valuenow', String(progress));
+  loadingProgressFill.style.width = `${progress}%`;
+  loadingPercent.textContent = `${progress}%`;
+  if (message) startStatus.textContent = message;
+}
+
+worldLoadingManager.onProgress = (_url, loaded, total) => {
+  setLoadingProgress((loaded / total) * 55, `Loading world assets… ${loaded} of ${total}`);
+};
+worldLoadingManager.onError = (url) => failedWorldAssets.push(url);
+worldLoadingManager.onLoad = () => resolveWorldAssetsLoaded();
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#a9c5af');
@@ -1217,7 +1241,7 @@ addBlock(2.2, 2.8, 5, closetWoodMaterial,
   [house.centerX + 18, upperFloorTop + 1.4, 20]);
 
 const upstairsFrameMaterial = new THREE.MeshStandardMaterial({ color: '#423126', roughness: 0.62 });
-const upstairsPhotoLoader = new THREE.TextureLoader();
+const upstairsPhotoLoader = new THREE.TextureLoader(worldLoadingManager);
 upstairsPhotoLoader.setCrossOrigin('anonymous');
 
 function addUpstairsWallArt(imagePath, title, credit, license, position, width, height, rotationY) {
@@ -1558,6 +1582,8 @@ scene.add(flashlight, flashlight.target);
 const keys = new Set();
 const unlockedPasswords = new Set();
 let playing = false;
+let worldReady = false;
+let worldLoadFailed = false;
 let toastTimeout;
 let lastFrameTime = performance.now();
 let activePasswordRank = 'All';
@@ -1955,6 +1981,12 @@ function toggleSettings() {
 closeSettingsButton.addEventListener('click', () => setSettingsOpen(false));
 
 enterButton.addEventListener('click', () => {
+  if (worldLoadFailed) {
+    window.location.reload();
+    return;
+  }
+  if (!worldReady) return;
+
   playing = true;
   startScreen.classList.add('is-hidden');
   requestMouseCapture();
@@ -2237,6 +2269,31 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+async function prepareWorld() {
+  await worldAssetsLoaded;
+  if (failedWorldAssets.length > 0) {
+    throw new Error(`Could not load world assets: ${failedWorldAssets.join(', ')}`);
+  }
+
+  setLoadingProgress(68, 'Preparing scene shaders…');
+  await renderer.compileAsync(scene, camera);
+
+  setLoadingProgress(84, 'Warming up the scene…');
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  renderer.render(scene, camera);
+  setLoadingProgress(94, 'Finishing world setup…');
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  renderer.render(scene, camera);
+
+  worldReady = true;
+  loadingPanel.hidden = true;
+  enterButton.disabled = false;
+  enterButton.textContent = 'STEP INTO THE WORLD →';
+  startStatus.textContent = 'The world is ready. Step in when you are.';
+  lastFrameTime = performance.now();
+  requestAnimationFrame(animate);
+}
+
 function animate(now) {
   requestAnimationFrame(animate);
   const delta = Math.min((now - lastFrameTime) / 1000, 0.05);
@@ -2307,4 +2364,12 @@ function animate(now) {
   renderer.render(scene, camera);
 }
 
-requestAnimationFrame(animate);
+prepareWorld().catch((error) => {
+  console.error('Unable to prepare the game world.', error);
+  worldLoadFailed = true;
+  loadingPanel.hidden = true;
+  const message = error instanceof Error ? error.message : String(error);
+  startStatus.textContent = `${message} Reload to try again.`;
+  enterButton.disabled = false;
+  enterButton.textContent = 'RELOAD TO RETRY';
+});

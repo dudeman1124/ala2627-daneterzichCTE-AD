@@ -77,7 +77,17 @@
         <p class="eyebrow">A WORLD MADE FOR WANDERING</p>
         <h2 id="start-title">Some things are<br><em>better discovered.</em></h2>
         <p>Look around. Follow your curiosity. The first clue may be closer than it seems.</p>
-        <button id="enter-world" type="button">STEP INTO THE WORLD <span>→</span></button>
+        <div class="world-loading" aria-live="polite">
+          <div class="world-loading-label">
+            <span>PREPARING THE WORLD</span>
+            <span id="loading-percent">0%</span>
+          </div>
+          <div id="loading-progress" class="loading-progress" role="progressbar" aria-label="World loading progress"
+            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span id="loading-progress-fill"></span>
+          </div>
+        </div>
+        <button id="enter-world" type="button" disabled>LOADING WORLD…</button>
         <div class="start-controls">
           <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> WALK</span>
           <span><kbd>SPACE</kbd> JUMP</span>
@@ -85,7 +95,7 @@
           <span><kbd>F</kbd> FLASHLIGHT</span>
           <span><kbd>E</kbd> INTERACT</span>
         </div>
-        <p id="start-status" class="start-status" role="status"></p>
+        <p id="start-status" class="start-status" role="status">Loading textures and preparing the scene…</p>
       </div>
     </section>
 

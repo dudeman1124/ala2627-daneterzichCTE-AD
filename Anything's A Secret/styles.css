@@ -702,6 +702,46 @@ kbd {
   letter-spacing: .1em;
 }
 
+#enter-world:disabled {
+  cursor: wait;
+  opacity: .58;
+}
+
+.world-loading {
+  margin: 0 auto 13px;
+  text-align: left;
+}
+
+.world-loading-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: rgba(246, 245, 233, .76);
+  font: 9px var(--mono);
+  letter-spacing: .08em;
+}
+
+.loading-progress {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(246, 245, 233, .18);
+}
+
+#loading-progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--leaf);
+  transition: width .2s ease;
+}
+
+.world-loading[hidden],
+.loading-progress[hidden] {
+  display: none;
+}
+
 .settings-panel {
   position: absolute;
   z-index: 4;
