@@ -30,6 +30,68 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color('#a9c5af');
 scene.fog = new THREE.Fog('#a9c5af', 175, 900);
 
+const skyUniforms = {
+  dayHorizon: { value: new THREE.Color('#b8c9bc') },
+  dayZenith: { value: new THREE.Color('#719ab2') },
+  nightHorizon: { value: new THREE.Color('#252333') },
+  nightZenith: { value: new THREE.Color('#09111d') },
+  twilightColor: { value: new THREE.Color('#e85c3d') },
+  moonSideColor: { value: new THREE.Color('#181a29') },
+  sunDirection: { value: new THREE.Vector3(1, 0, 0) },
+  moonDirection: { value: new THREE.Vector3(-1, 0, 0) },
+  daylight: { value: 1 },
+  twilight: { value: 0 },
+  moonDarkening: { value: 0 }
+};
+const skyDome = new THREE.Mesh(
+  new THREE.SphereGeometry(1300, 48, 32),
+  new THREE.ShaderMaterial({
+    uniforms: skyUniforms,
+    vertexShader: `
+      varying vec3 vSkyDirection;
+      void main() {
+        vSkyDirection = normalize(position);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 dayHorizon;
+      uniform vec3 dayZenith;
+      uniform vec3 nightHorizon;
+      uniform vec3 nightZenith;
+      uniform vec3 twilightColor;
+      uniform vec3 moonSideColor;
+      uniform vec3 sunDirection;
+      uniform vec3 moonDirection;
+      uniform float daylight;
+      uniform float twilight;
+      uniform float moonDarkening;
+      varying vec3 vSkyDirection;
+      void main() {
+        vec3 direction = normalize(vSkyDirection);
+        float horizon = smoothstep(-0.2, 0.55, direction.y);
+        vec3 dayColor = mix(dayHorizon, dayZenith, horizon);
+        vec3 nightColor = mix(nightHorizon, nightZenith, horizon);
+        vec3 color = mix(nightColor, dayColor, daylight);
+        float sunAlignment = max(dot(direction, normalize(sunDirection)), 0.0);
+        float sunHalo = pow(sunAlignment, 5.0) * 0.28 + pow(sunAlignment, 24.0) * 0.72;
+        color = mix(color, twilightColor, twilight * sunHalo);
+        float moonAlignment = max(dot(direction, normalize(moonDirection)), 0.0);
+        float moonShade = pow(moonAlignment, 3.0) * moonDarkening * 0.72;
+        color = mix(color, moonSideColor, moonShade);
+        gl_FragColor = vec4(color, 1.0);
+        #include <colorspace_fragment>
+      }
+    `,
+    side: THREE.BackSide,
+    depthWrite: false,
+    toneMapped: false
+  })
+);
+skyDome.frustumCulled = false;
+skyDome.renderOrder = -1000;
+scene.add(skyDome);
+
 const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1400);
 camera.rotation.order = 'YXZ';
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -381,10 +443,10 @@ const sideOpenings = [-13, 13].map((center) => ({
 addBlock(house.width - 1, 0.28, house.depth - 1,
   new THREE.MeshStandardMaterial({ color: '#4e86a2', roughness: 0.82 }),
   [house.centerX, house.floorHeight / 2, house.centerZ]);
-addHouseWall('z', houseMinX, houseMinZ, houseMaxZ, frontOpenings);
-addHouseWall('z', houseMaxX, houseMinZ, houseMaxZ, backOpenings);
-addHouseWall('x', houseMinZ, houseMinX, houseMaxX, sideOpenings);
-addHouseWall('x', houseMaxZ, houseMinX, houseMaxX, sideOpenings);
+addHouseWall('z', houseMinX, houseMinZ, houseMaxZ, frontOpenings, house.floorHeight, upperFloorTop);
+addHouseWall('z', houseMaxX, houseMinZ, houseMaxZ, backOpenings, house.floorHeight, upperFloorTop);
+addHouseWall('x', houseMinZ, houseMinX, houseMaxX, sideOpenings, house.floorHeight, upperFloorTop);
+addHouseWall('x', houseMaxZ, houseMinX, houseMaxX, sideOpenings, house.floorHeight, upperFloorTop);
 
 for (const center of [-13, 13]) {
   addHouseWindow('z', houseMinX, house.centerZ + center, windowWidth, windowBottom, windowHeight);
@@ -1262,7 +1324,7 @@ scene.add(sunWord);
 
 const moon = new THREE.Mesh(
   new THREE.SphereGeometry(30, 32, 24),
-  new THREE.MeshBasicMaterial({ color: '#b9c3cf' })
+  new THREE.MeshBasicMaterial({ color: '#b9c3cf', transparent: true })
 );
 moon.position.set(68, 34, -130);
 moon.visible = false;
@@ -1292,7 +1354,11 @@ crossGroup.position.set(0, 0.35, -50);
 scene.add(crossGroup);
 
 const starGeometry = new THREE.SphereGeometry(0.8, 8, 6);
-const starMaterial = new THREE.MeshBasicMaterial({ color: '#f6f1d8' });
+const starMaterial = new THREE.MeshBasicMaterial({
+  color: '#f6f1d8',
+  transparent: true,
+  depthWrite: false
+});
 for (let index = 0; index < 15; index += 1) {
   const star = new THREE.Mesh(starGeometry, starMaterial);
   star.position.set((random() - 0.5) * 520, 145 + random() * 155, (random() - 0.5) * 520);
@@ -1601,12 +1667,25 @@ const celestialLabelDepth = celestialOrbitDepth + 36;
 const idleCelestialSpinSpeed = 0.18 / 20;
 const madeInHeavenDurationMs = 30000;
 const madeInHeavenPhrase = 'madeinheaven';
-let timeOfDay = 'day';
+let timeOfDay = null;
 let activeStarPhrase = null;
 let celestialOrbitAngle = 0;
 let madeInHeavenActive = false;
 let madeInHeavenActivated = false;
 let madeInHeavenStartedAt = 0;
+const daySunColor = new THREE.Color('#fff1cf');
+const duskSunColor = new THREE.Color('#ff6242');
+const dayBackgroundColor = new THREE.Color('#a9c5af');
+const nightBackgroundColor = new THREE.Color('#09111d');
+const dayAmbientColor = new THREE.Color('#e8f4df');
+const nightAmbientColor = new THREE.Color('#63758e');
+const dayGroundAmbientColor = new THREE.Color('#6a704a');
+const nightGroundAmbientColor = new THREE.Color('#20272b');
+const dayGroundColor = new THREE.Color('#78965e');
+const nightGroundColor = new THREE.Color('#1b2926');
+const dayGrassColor = new THREE.Color('#79a252');
+const nightGrassColor = new THREE.Color('#26352b');
+const currentSunColor = new THREE.Color();
 
 function updateCelestialPositions() {
   const xOffset = Math.cos(celestialOrbitAngle) * celestialOrbitRadius;
@@ -1624,44 +1703,72 @@ function updateCelestialPositions() {
 }
 
 function advanceCelestialOrbit(delta, speed) {
-  const previousHalf = Math.floor(celestialOrbitAngle / Math.PI);
   celestialOrbitAngle += delta * speed;
-  const currentHalf = Math.floor(celestialOrbitAngle / Math.PI);
-
   updateCelestialPositions();
-  if (currentHalf !== previousHalf) {
-    timeOfDay = currentHalf % 2 === 0 ? 'day' : 'night';
-    updateWorldSettings();
-  }
+  updateWorldSettings();
 }
 
 function updateWorldSettings() {
-  const isNight = timeOfDay === 'night';
-  const starEntry = passwordIndex.find(({ id }) => id === 'stars');
-  if (activeStarPhrase) passwordSecrets.delete(activeStarPhrase);
-  starEntry.phrase = `${starCount}st4rs`;
-  activeStarPhrase = starEntry.phrase;
-  passwordSecrets.delete('fu11m00n');
-  if (isNight) {
-    passwordSecrets.set(starEntry.phrase, 'stars');
-    passwordSecrets.set('fu11m00n', 'fullmoon');
+  const fullOrbit = Math.PI * 2;
+  const angle = ((celestialOrbitAngle % fullOrbit) + fullOrbit) % fullOrbit;
+  const sunset = THREE.MathUtils.smoothstep(angle, Math.PI * 0.8, Math.PI);
+  const sunrise = THREE.MathUtils.smoothstep(angle, Math.PI * 1.8, fullOrbit);
+  let daylight = 0;
+  if (angle < Math.PI * 0.8) {
+    daylight = 1;
+  } else if (angle < Math.PI) {
+    daylight = 1 - sunset;
+  } else if (angle >= Math.PI * 1.8) {
+    daylight = sunrise;
   }
+  const sunsetTwilight = angle < Math.PI
+    ? sunset
+    : 1 - THREE.MathUtils.smoothstep(angle, Math.PI, Math.PI * 1.08);
+  const sunriseTwilight = angle >= Math.PI * 1.8 ? 1 - sunrise : 0;
+  const twilight = Math.max(sunsetTwilight, sunriseTwilight);
+  const isNight = daylight < 0.5;
+  currentSunColor.copy(duskSunColor).lerp(daySunColor, 1 - twilight);
 
-  scene.background.set(isNight ? '#09111d' : '#a9c5af');
-  scene.fog.color.set(isNight ? '#09111d' : '#a9c5af');
-  ambient.color.set(isNight ? '#63758e' : '#e8f4df');
-  ambient.groundColor.set(isNight ? '#20272b' : '#6a704a');
-  ambient.intensity = isNight ? 0.52 : 2.1;
-  sun.intensity = isNight ? 0 : 2.6;
-  ground.material.color.set(isNight ? '#1b2926' : '#78965e');
-  grassMaterial.color.set(isNight ? '#26352b' : '#79a252');
-  sunGlow.visible = !isNight;
-  sunWord.visible = !isNight;
-  moon.visible = isNight;
-  moonWord.visible = isNight;
+  skyUniforms.daylight.value = daylight;
+  skyUniforms.twilight.value = twilight;
+  skyUniforms.moonDarkening.value = twilight;
+  skyUniforms.sunDirection.value.copy(sunGlow.position).sub(camera.position).normalize();
+  skyUniforms.moonDirection.value.copy(moon.position).sub(camera.position).normalize();
+  scene.background.copy(nightBackgroundColor).lerp(dayBackgroundColor, daylight);
+  scene.fog.color.copy(nightBackgroundColor).lerp(dayBackgroundColor, daylight);
+  ambient.color.copy(nightAmbientColor).lerp(dayAmbientColor, daylight);
+  ambient.groundColor.copy(nightGroundAmbientColor).lerp(dayGroundAmbientColor, daylight);
+  ambient.intensity = THREE.MathUtils.lerp(0.52, 2.1, daylight);
+  sun.color.copy(currentSunColor);
+  sun.intensity = daylight * 2.6;
+  ground.material.color.copy(nightGroundColor).lerp(dayGroundColor, daylight);
+  grassMaterial.color.copy(nightGrassColor).lerp(dayGrassColor, daylight);
+  sunGlow.material.color.copy(currentSunColor);
+  sunGlow.material.opacity = 0.96 * daylight;
+  sunGlow.visible = daylight > 0;
+  sunWord.material.opacity = 0.7 * daylight;
+  sunWord.visible = daylight > 0;
+  moon.material.opacity = 1 - daylight;
+  moon.visible = daylight < 1;
+  moonWord.material.opacity = 0.56 * (1 - daylight);
+  moonWord.visible = daylight < 1;
+  starMaterial.opacity = 1 - daylight;
   nightStars.children.forEach((star, index) => {
-    star.visible = isNight && index < starCount;
+    star.visible = index < starCount && daylight < 1;
   });
+
+  if (timeOfDay !== (isNight ? 'night' : 'day')) {
+    timeOfDay = isNight ? 'night' : 'day';
+    const starEntry = passwordIndex.find(({ id }) => id === 'stars');
+    if (activeStarPhrase) passwordSecrets.delete(activeStarPhrase);
+    starEntry.phrase = `${starCount}st4rs`;
+    activeStarPhrase = starEntry.phrase;
+    passwordSecrets.delete('fu11m00n');
+    if (isNight) {
+      passwordSecrets.set(starEntry.phrase, 'stars');
+      passwordSecrets.set('fu11m00n', 'fullmoon');
+    }
+  }
 }
 
 function activateMadeInHeaven() {
@@ -1670,7 +1777,6 @@ function activateMadeInHeaven() {
   madeInHeavenActivated = true;
   madeInHeavenStartedAt = performance.now();
   celestialOrbitAngle = 0;
-  timeOfDay = 'day';
   updateCelestialPositions();
   updateWorldSettings();
   showToast('Made In Heaven');
@@ -1687,7 +1793,6 @@ function updateMadeInHeavenEffect(delta) {
   const elapsedMs = performance.now() - madeInHeavenStartedAt;
   if (elapsedMs >= madeInHeavenDurationMs) {
     madeInHeavenActive = false;
-    timeOfDay = Math.floor(celestialOrbitAngle / Math.PI) % 2 === 0 ? 'day' : 'night';
     updateWorldSettings();
     showToast('The heavens reset.');
     return;
@@ -1702,14 +1807,8 @@ function updateMadeInHeavenEffect(delta) {
 
 for (const input of timeOfDayInputs) {
   input.addEventListener('change', () => {
-    const currentHalf = Math.floor(celestialOrbitAngle / Math.PI);
-    const isCurrentNight = currentHalf % 2 !== 0;
-    const isRequestedNight = input.value === 'night';
-    if (isCurrentNight !== isRequestedNight) {
-      celestialOrbitAngle += Math.PI;
-      updateCelestialPositions();
-    }
-    timeOfDay = input.value;
+    celestialOrbitAngle = input.value === 'night' ? Math.PI * 1.5 : Math.PI * 0.5;
+    updateCelestialPositions();
     updateWorldSettings();
   });
 }
@@ -2201,6 +2300,9 @@ function animate(now) {
   flashlightDirection.normalize();
   flashlight.position.copy(camera.position).addScaledVector(flashlightDirection, 0.3);
   flashlight.target.position.copy(camera.position).addScaledVector(flashlightDirection, 38);
+  skyDome.position.copy(camera.position);
+  skyUniforms.sunDirection.value.copy(sunGlow.position).sub(camera.position).normalize();
+  skyUniforms.moonDirection.value.copy(moon.position).sub(camera.position).normalize();
 
   renderer.render(scene, camera);
 }
