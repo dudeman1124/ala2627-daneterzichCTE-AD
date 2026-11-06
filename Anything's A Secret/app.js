@@ -90,12 +90,13 @@ const upperFloorThickness = 0.5;
 const upperFloorTop = houseWallTop + upperFloorThickness;
 const upperWallTop = upperFloorTop + house.wallHeight;
 const stairwell = {
-  centerZ: houseMinZ + 3,
+  centerZ: houseMaxZ - 3.8,
   startX: houseMinX + 5,
   endX: house.centerX,
   width: 6,
   stepCount: 20
 };
+const stairStepHeightTolerance = 0.72;
 const upperHall = {
   minX: house.centerX - 3.5,
   maxX: house.centerX + 3.5,
@@ -277,7 +278,7 @@ function addHouseWall(axis, fixed, start, end, openings = [], bottom = house.flo
 
 function addUpperPartition(axis, fixed, start, end, doorways = []) {
   const wallThickness = 0.42;
-  const wallHeight = 8.2;
+  const wallHeight = house.wallHeight;
   const wallBottom = upperFloorTop;
   const wallTop = wallBottom + wallHeight;
   const cuts = [start, end];
@@ -398,10 +399,10 @@ const floorMinX = houseMinX + 0.5;
 const floorMaxX = houseMaxX - 0.5;
 const floorMinZ = houseMinZ + 0.5;
 const floorMaxZ = houseMaxZ - 0.5;
-const stairOpeningMinX = stairwell.startX - 0.35;
-const stairOpeningMaxX = stairwell.endX + 0.45;
-const stairOpeningMinZ = Math.max(floorMinZ, stairwell.centerZ - stairwell.width / 2 - 0.3);
-const stairOpeningMaxZ = stairwell.centerZ + stairwell.width / 2 + 0.3;
+const stairOpeningMinX = stairwell.startX - 0.02;
+const stairOpeningMaxX = stairwell.endX + 0.02;
+const stairOpeningMinZ = Math.max(floorMinZ, stairwell.centerZ - stairwell.width / 2);
+const stairOpeningMaxZ = stairwell.centerZ + stairwell.width / 2;
 
 function addUpperFloorTile(minX, maxX, minZ, maxZ) {
   if (maxX <= minX || maxZ <= minZ) return;
@@ -1146,8 +1147,8 @@ for (const [centerX, bedding] of [
 
 const loftRugMaterial = new THREE.MeshStandardMaterial({ color: '#8a6948', roughness: 0.96 });
 const loftSeatMaterial = new THREE.MeshStandardMaterial({ color: '#6d7f6d', roughness: 0.94 });
-addBlock(12, 0.12, 6, loftRugMaterial, [house.centerX, upperFloorTop + 0.08, 20]);
-addBlock(7, 1.2, 2.2, loftSeatMaterial, [house.centerX, upperFloorTop + 0.75, 20]);
+addBlock(12, 0.12, 6, loftRugMaterial, [house.centerX + 10, upperFloorTop + 0.08, 20]);
+addBlock(7, 1.2, 2.2, loftSeatMaterial, [house.centerX + 10, upperFloorTop + 0.75, 20]);
 addBlock(2.2, 2.8, 5, closetWoodMaterial,
   [house.centerX - 18, upperFloorTop + 1.4, 20]);
 addBlock(2.2, 2.8, 5, closetWoodMaterial,
@@ -2060,10 +2061,10 @@ function groundHeightAt(x, z) {
     if (insideStairwell) {
       const progress = (x - stairwell.startX) / (stairwell.endX - stairwell.startX);
       const stairHeight = house.floorHeight + (upperFloorTop - house.floorHeight) * progress;
-      return feetHeight >= stairHeight - 0.72 ? stairHeight : house.floorHeight;
+      return feetHeight >= stairHeight - stairStepHeightTolerance ? stairHeight : house.floorHeight;
     }
 
-    return feetHeight >= upperFloorTop - 0.05 ? upperFloorTop : house.floorHeight;
+    return feetHeight >= upperFloorTop - player.height ? upperFloorTop : house.floorHeight;
   }
 
   const platformHalfWidth = platformWidth / 2 - 0.18;
@@ -2087,17 +2088,30 @@ function collidesWithStructure(x, z) {
   const eastWall = overlapsHouse && x > houseMaxX - 0.6 && x < houseMaxX + 0.6;
   const northWall = overlapsHouse && z > houseMinZ - 0.6 && z < houseMinZ + 0.6;
   const southWall = overlapsHouse && z > houseMaxZ - 0.6 && z < houseMaxZ + 0.6;
-  const insideUpperLevel = feetHeight >= upperFloorTop - 0.1 && feetHeight < upperFloorTop + 8.2;
+  const insideUpperLevel = feetHeight >= upperFloorTop - player.height &&
+    feetHeight < upperFloorTop + house.wallHeight;
   const upperWallCollision = insideUpperLevel && upperInteriorWallBounds.some((wall) =>
     x > wall.minX - 0.35 && x < wall.maxX + 0.35 && z > wall.minZ - 0.35 && z < wall.maxZ + 0.35
   );
+  const insideStairTreads = x >= stairwell.startX && x <= stairwell.endX &&
+    z >= stairwell.centerZ - (stairwell.width - 0.6) / 2 &&
+    z <= stairwell.centerZ + (stairwell.width - 0.6) / 2;
+  const stairRise = (upperFloorTop - house.floorHeight) / stairwell.stepCount;
+  const stairIndex = Math.min(
+    stairwell.stepCount - 1,
+    Math.floor(((x - stairwell.startX) / (stairwell.endX - stairwell.startX)) * stairwell.stepCount)
+  );
+  const stairTreadTop = house.floorHeight + stairRise * (stairIndex + 1);
+  const stairBodyCollision = insideStairTreads &&
+    feetHeight + player.height > house.floorHeight &&
+    feetHeight < stairTreadTop - stairStepHeightTolerance;
   const stairRailCollision = insideStairwellBounds(x, z) &&
     [
       stairwell.centerZ - stairwell.width / 2 + 0.18,
       stairwell.centerZ + stairwell.width / 2 - 0.18
     ].some((railZ) => Math.abs(z - railZ) < 0.34);
   return planterCollision || pillarCollision || signCollision || westWall || eastWall || northWall || southWall ||
-    upperWallCollision || stairRailCollision;
+    upperWallCollision || stairBodyCollision || stairRailCollision;
 }
 
 function insideStairwellBounds(x, z) {
@@ -2110,7 +2124,7 @@ function canReachGroundAt(x, z) {
   const feetHeight = player.position.y - eyeHeight;
   const insideStairwell = x >= stairwell.startX && x <= stairwell.endX &&
     z >= stairwell.centerZ - stairwell.width / 2 && z <= stairwell.centerZ + stairwell.width / 2;
-  return groundHeightAt(x, z) <= feetHeight + (insideStairwell ? 0.72 : 0.04);
+  return groundHeightAt(x, z) <= feetHeight + (insideStairwell ? stairStepHeightTolerance : 0.04);
 }
 
 function resize() {
