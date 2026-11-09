@@ -1,5 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
 
+const mfDoomImageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/' +
+  'MF_Doom_-_Hultsfred_2011_%28cropped%29.jpg/960px-MF_Doom_-_Hultsfred_2011_%28cropped%29.jpg';
 const canvas = document.querySelector('#world');
 const startScreen = document.querySelector('#start-screen');
 const enterButton = document.querySelector('#enter-world');
@@ -30,7 +32,6 @@ const passwordIndexPanel = document.querySelector('#password-index-panel');
 const passwordFilters = document.querySelector('#password-filters');
 const passwordList = document.querySelector('#password-list');
 const worldLoadingManager = new THREE.LoadingManager();
-const failedWorldAssets = [];
 let resolveWorldAssetsLoaded;
 const worldAssetsLoaded = new Promise((resolve) => {
   resolveWorldAssetsLoaded = resolve;
@@ -47,7 +48,6 @@ function setLoadingProgress(percent, message) {
 worldLoadingManager.onProgress = (_url, loaded, total) => {
   setLoadingProgress((loaded / total) * 55, `Loading world assets… ${loaded} of ${total}`);
 };
-worldLoadingManager.onError = (url) => failedWorldAssets.push(url);
 worldLoadingManager.onLoad = () => resolveWorldAssetsLoaded();
 
 const scene = new THREE.Scene();
@@ -61,7 +61,6 @@ const skyUniforms = {
   nightZenith: { value: new THREE.Color('#09111d') },
   twilightColor: { value: new THREE.Color('#e85c3d') },
   moonSideColor: { value: new THREE.Color('#181a29') },
-  sunDirection: { value: new THREE.Vector3(1, 0, 0) },
   moonDirection: { value: new THREE.Vector3(-1, 0, 0) },
   daylight: { value: 1 },
   twilight: { value: 0 },
@@ -85,7 +84,6 @@ const skyDome = new THREE.Mesh(
       uniform vec3 nightZenith;
       uniform vec3 twilightColor;
       uniform vec3 moonSideColor;
-      uniform vec3 sunDirection;
       uniform vec3 moonDirection;
       uniform float daylight;
       uniform float twilight;
@@ -97,9 +95,8 @@ const skyDome = new THREE.Mesh(
         vec3 dayColor = mix(dayHorizon, dayZenith, horizon);
         vec3 nightColor = mix(nightHorizon, nightZenith, horizon);
         vec3 color = mix(nightColor, dayColor, daylight);
-        float sunAlignment = max(dot(direction, normalize(sunDirection)), 0.0);
-        float sunHalo = pow(sunAlignment, 5.0) * 0.28 + pow(sunAlignment, 24.0) * 0.72;
-        color = mix(color, twilightColor, twilight * sunHalo);
+        float horizonGlow = 1.0 - smoothstep(0.0, 0.42, max(direction.y, 0.0));
+        color = mix(color, twilightColor, twilight * horizonGlow);
         float moonAlignment = max(dot(direction, normalize(moonDirection)), 0.0);
         float moonShade = pow(moonAlignment, 3.0) * moonDarkening * 0.72;
         color = mix(color, moonSideColor, moonShade);
@@ -386,7 +383,8 @@ function addUpperPartition(axis, fixed, start, end, doorways = []) {
       const doorway = doorways.find((entry) =>
         segmentCenter > entry.center - entry.width / 2 && segmentCenter < entry.center + entry.width / 2
       );
-      const headerHeight = Math.max(0, wallHeight - (doorway.height ?? 6.8));
+      const doorwayHeight = doorway.height ?? 6.8;
+      const headerHeight = Math.max(0, wallHeight - doorwayHeight);
       if (headerHeight > 0) {
         const dimensions = axis === 'x'
           ? [segmentEnd - segmentStart, headerHeight, wallThickness]
@@ -396,6 +394,23 @@ function addUpperPartition(axis, fixed, start, end, doorways = []) {
           : [fixed, wallBottom + wallHeight - headerHeight / 2, (segmentStart + segmentEnd) / 2];
         addBlock(...dimensions, houseWallMaterial, position);
       }
+      const casingHeight = Math.min(doorwayHeight, wallHeight);
+      for (const edge of [doorway.center - doorway.width / 2, doorway.center + doorway.width / 2]) {
+        const dimensions = axis === 'x'
+          ? [0.18, casingHeight, wallThickness + 0.18]
+          : [wallThickness + 0.18, casingHeight, 0.18];
+        const position = axis === 'x'
+          ? [edge, wallBottom + casingHeight / 2, fixed]
+          : [fixed, wallBottom + casingHeight / 2, edge];
+        addBlock(...dimensions, upperPartitionTrimMaterial, position);
+      }
+      const lintelDimensions = axis === 'x'
+        ? [doorway.width + 0.18, 0.18, wallThickness + 0.18]
+        : [wallThickness + 0.18, 0.18, doorway.width + 0.18];
+      const lintelPosition = axis === 'x'
+        ? [doorway.center, wallBottom + casingHeight, fixed]
+        : [fixed, wallBottom + casingHeight, doorway.center];
+      addBlock(...lintelDimensions, upperPartitionTrimMaterial, lintelPosition);
       continue;
     }
 
@@ -406,6 +421,17 @@ function addUpperPartition(axis, fixed, start, end, doorways = []) {
       ? [(segmentStart + segmentEnd) / 2, (wallBottom + wallTop) / 2, fixed]
       : [fixed, (wallBottom + wallTop) / 2, (segmentStart + segmentEnd) / 2];
     addBlock(...dimensions, houseWallMaterial, position);
+    const trimDimensions = axis === 'x'
+      ? [segmentEnd - segmentStart, 0.34, wallThickness + 0.12]
+      : [wallThickness + 0.12, 0.34, segmentEnd - segmentStart];
+    const baseboardPosition = axis === 'x'
+      ? [(segmentStart + segmentEnd) / 2, wallBottom + 0.17, fixed]
+      : [fixed, wallBottom + 0.17, (segmentStart + segmentEnd) / 2];
+    const crownPosition = axis === 'x'
+      ? [(segmentStart + segmentEnd) / 2, wallTop - 0.37, fixed]
+      : [fixed, wallTop - 0.37, (segmentStart + segmentEnd) / 2];
+    addBlock(...trimDimensions, upperPartitionTrimMaterial, baseboardPosition);
+    addBlock(...trimDimensions, upperPartitionTrimMaterial, crownPosition);
     upperInteriorWallBounds.push(axis === 'x'
       ? { minX: segmentStart, maxX: segmentEnd, minZ: fixed - wallThickness / 2, maxZ: fixed + wallThickness / 2 }
       : { minX: fixed - wallThickness / 2, maxX: fixed + wallThickness / 2, minZ: segmentStart, maxZ: segmentEnd });
@@ -480,6 +506,7 @@ for (const center of [-13, 13]) {
 }
 
 const upperFloorMaterial = new THREE.MeshStandardMaterial({ color: '#765d48', roughness: 0.88 });
+const upperPartitionTrimMaterial = new THREE.MeshStandardMaterial({ color: '#e5d8bd', roughness: 0.82 });
 const upperFloorY = houseWallTop + upperFloorThickness / 2;
 const floorMinX = houseMinX + 0.5;
 const floorMaxX = houseMaxX - 0.5;
@@ -530,18 +557,21 @@ for (const center of [-13, 13]) {
 const northRoomDoorwayZ = upperHall.minZ + 8.5;
 const southRoomDoorwayZ = upperHall.maxZ - 7;
 const roomSplitZ = 0;
-const westWingStart = floorMinX;
-const eastWingEnd = floorMaxX;
+const westWingStart = houseMinX;
+const eastWingEnd = houseMaxX;
 const loftFrontRailZ = loftMinZ;
 
-addUpperPartition('z', upperHall.minX, upperHall.minZ, loftMinZ, [
+addUpperPartition('z', upperHall.minX, houseMinZ, loftMinZ + 3, [
   { center: northRoomDoorwayZ, width: 3.8 },
   { center: southRoomDoorwayZ, width: 3.8 }
 ]);
-addUpperPartition('z', upperHall.maxX, upperHall.minZ, loftMinZ, [
+addUpperPartition('x', loftMinZ + 3, westWingStart, upperHall.minX);
+addUpperPartition('z', upperHall.maxX, houseMinZ, loftMinZ, [
   { center: northRoomDoorwayZ, width: 3.8 },
   { center: southRoomDoorwayZ, width: 3.8 }
 ]);
+addUpperPartition('z', upperHall.maxX, loftMinZ, loftMinZ + 3);
+addUpperPartition('x', loftMinZ + 3, upperHall.maxX, eastWingEnd);
 addUpperPartition('x', roomSplitZ, westWingStart, upperHall.minX, [
   { center: house.centerX - 11, width: 3.5 }
 ]);
@@ -643,6 +673,27 @@ leftRoof.rotation.z = roofAngle;
 const rightRoof = addBlock(roofLength, 0.62, house.depth + 1.8, houseRoofMaterial,
   [house.centerX + roofRun / 2, upperWallTop + roofRise / 2, house.centerZ]);
 rightRoof.rotation.z = -roofAngle;
+
+const interiorCeilingMaterial = new THREE.MeshStandardMaterial({
+  color: '#e8dfce',
+  roughness: 0.94,
+  side: THREE.DoubleSide
+});
+const interiorCeilingTrimMaterial = new THREE.MeshStandardMaterial({ color: '#8a6948', roughness: 0.82 });
+for (const [direction, rotation] of [[-1, roofAngle], [1, -roofAngle]]) {
+  const normalOffset = 0.42;
+  const ceilingPanel = addBlock(roofLength - 0.8, 0.16, house.depth - 1.4, interiorCeilingMaterial,
+    [
+      house.centerX + direction * (roofRun / 2 + Math.sin(rotation) * normalOffset),
+      upperWallTop + roofRise / 2 - Math.cos(rotation) * normalOffset,
+      house.centerZ
+    ],
+    false
+  );
+  ceilingPanel.rotation.z = rotation;
+}
+addBlock(0.3, 0.32, house.depth - 0.8, interiorCeilingTrimMaterial,
+  [house.centerX, upperWallTop + roofRise - 0.48, house.centerZ], false);
 
 const chimneyMaterial = new THREE.MeshStandardMaterial({ color: '#a84a40', roughness: 0.9 });
 const fireplaceStone = new THREE.MeshStandardMaterial({ color: '#756e61', roughness: 0.9 });
@@ -770,17 +821,17 @@ const firstFloorFixtures = [-14, 14].flatMap((offsetX) =>
 createLightSystem('FIRST FLOOR', firstFloorFixtures, house.floorHeight, 10.2, 36,
   [houseMinX + 0.48, house.floorHeight + 4.4, house.centerZ + 3], Math.PI / 2);
 createLightSystem('LOFT', [[house.centerX - 10, 19], [house.centerX + 10, 19]],
-  upperFloorTop, 9.8, 24, [house.centerX, upperFloorTop + 4.4, houseMaxZ - 0.48], Math.PI);
+  upperFloorTop, 11.5, 24, [house.centerX, upperFloorTop + 4.4, houseMaxZ - 0.48], Math.PI);
 createLightSystem('HALLWAY', [[house.centerX, -13], [house.centerX, -4], [house.centerX, 5], [house.centerX, 11]],
-  upperFloorTop, 9.8, 24, [upperHall.minX + 0.45, upperFloorTop + 4.4, -2], Math.PI / 2);
+  upperFloorTop, 11.5, 24, [upperHall.minX + 0.45, upperFloorTop + 4.4, -2], Math.PI / 2);
 createLightSystem('BATHROOM', [[house.centerX - 14, -13], [house.centerX - 7, -13]],
-  upperFloorTop, 9.8, 22, [upperHall.minX + 0.45, upperFloorTop + 4.4, northRoomDoorwayZ - 2.4], Math.PI / 2);
+  upperFloorTop, 11.5, 22, [upperHall.minX + 0.45, upperFloorTop + 4.4, northRoomDoorwayZ - 2.4], Math.PI / 2);
 createLightSystem('CLOSET', [[house.centerX + 7, -13], [house.centerX + 14, -13]],
-  upperFloorTop, 9.8, 22, [upperHall.maxX - 0.45, upperFloorTop + 4.4, northRoomDoorwayZ - 2.4], -Math.PI / 2);
+  upperFloorTop, 11.5, 22, [upperHall.maxX - 0.45, upperFloorTop + 4.4, northRoomDoorwayZ - 2.4], -Math.PI / 2);
 createLightSystem('MF DOOM BEDROOM', [[house.centerX - 14, 8], [house.centerX - 7, 8]],
-  upperFloorTop, 9.8, 22, [upperHall.minX + 0.45, upperFloorTop + 4.4, southRoomDoorwayZ - 2.4], Math.PI / 2);
+  upperFloorTop, 11.5, 22, [upperHall.minX + 0.45, upperFloorTop + 4.4, southRoomDoorwayZ - 2.4], Math.PI / 2);
 createLightSystem('PEOPLE UNDER THE STAIRS BEDROOM', [[house.centerX + 7, 8], [house.centerX + 14, 8]],
-  upperFloorTop, 9.8, 22, [upperHall.maxX - 0.45, upperFloorTop + 4.4, southRoomDoorwayZ - 2.4], -Math.PI / 2);
+  upperFloorTop, 11.5, 22, [upperHall.maxX - 0.45, upperFloorTop + 4.4, southRoomDoorwayZ - 2.4], -Math.PI / 2);
 
 const tvBodyMaterial = new THREE.MeshStandardMaterial({ color: '#111820', roughness: 0.35, metalness: 0.3 });
 const tvScreenMaterial = new THREE.MeshStandardMaterial({
@@ -973,13 +1024,24 @@ updateTv();
 
 const sofaMaterial = new THREE.MeshStandardMaterial({ color: '#557660', roughness: 0.96 });
 const sofaCushionMaterial = new THREE.MeshStandardMaterial({ color: '#89a58c', roughness: 0.98 });
+const sofaPillowMaterial = new THREE.MeshStandardMaterial({ color: '#c4aa7b', roughness: 0.98 });
+const sofaLegMaterial = new THREE.MeshStandardMaterial({ color: '#493728', roughness: 0.78 });
 addBlock(5.2, 1.15, 11, sofaMaterial, [house.centerX + 1, house.floorHeight + 0.95, house.centerZ + 3]);
 addBlock(1.25, 2.5, 11, sofaMaterial, [house.centerX - 1.45, house.floorHeight + 2.1, house.centerZ + 3]);
 for (const z of [house.centerZ - 2.65, house.centerZ + 8.65]) {
   addBlock(5.2, 1.8, 0.9, sofaMaterial, [house.centerX + 1, house.floorHeight + 1.45, z]);
 }
-for (const z of [house.centerZ + 0.5, house.centerZ + 5.5]) {
-  addBlock(3.6, 0.38, 4.2, sofaCushionMaterial, [house.centerX + 1.5, house.floorHeight + 1.72, z]);
+for (const z of [house.centerZ + 0.1, house.centerZ + 3, house.centerZ + 5.9]) {
+  addBlock(3.75, 0.42, 3.1, sofaCushionMaterial, [house.centerX + 1.55, house.floorHeight + 1.72, z]);
+  const pillow = addBlock(0.55, 1.1, 1.2, sofaPillowMaterial,
+    [house.centerX - 0.5, house.floorHeight + 2.2, z]);
+  pillow.rotation.x = -0.16;
+}
+for (const x of [house.centerX - 1.05, house.centerX + 3.05]) {
+  for (const z of [house.centerZ - 1.25, house.centerZ + 7.25]) {
+    addBlock(0.38, 0.5, 0.38, sofaLegMaterial,
+      [x, house.floorHeight + 0.25, z]);
+  }
 }
 
 const tableMaterial = new THREE.MeshStandardMaterial({ color: '#79543c', roughness: 0.72 });
@@ -1153,20 +1215,14 @@ const portrait = new THREE.Mesh(new THREE.PlaneGeometry(2.95, 2.95), portraitMat
 portrait.position.set(portraitFrameX - 0.12, portraitY, portraitZ);
 portrait.rotation.y = -Math.PI / 2;
 scene.add(portrait);
-fetch('https://en.wikipedia.org/w/api.php?action=query&titles=MF_Doom&prop=pageimages&format=json&pithumbsize=600&origin=*')
-  .then((response) => response.json())
-  .then((data) => {
-    const imageUrl = Object.values(data.query.pages)[0]?.thumbnail?.source;
-    if (!imageUrl) return;
-    const portraitImage = new Image();
-    portraitImage.crossOrigin = 'anonymous';
-    portraitImage.onload = () => {
-      portraitTexture.image = portraitImage;
-      portraitTexture.needsUpdate = true;
-    };
-    portraitImage.src = imageUrl;
-  })
-  .catch(() => {});
+const portraitImage = new Image();
+portraitImage.crossOrigin = 'anonymous';
+portraitImage.onload = () => {
+  portraitTexture.image = portraitImage;
+  portraitTexture.needsUpdate = true;
+};
+portraitImage.onerror = () => console.warn(`Could not load MF DOOM portrait from ${mfDoomImageUrl}.`);
+portraitImage.src = mfDoomImageUrl;
 
 const fridgeInteractionPosition = new THREE.Vector3(
   fridgePosition.x,
@@ -1188,8 +1244,10 @@ const toiletBowl = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.13, 10, 24), b
 toiletBowl.rotation.x = Math.PI / 2;
 toiletBowl.position.set(house.centerX - 8, upperFloorTop + 1.2, -13);
 scene.add(toiletBowl);
-addBlock(1.7, 2.5, 0.9, bathroomMaterial,
-  [house.centerX - 8, upperFloorTop + 2.25, -14.15]);
+addBlock(1.55, 1.5, 0.82, bathroomMaterial,
+  [house.centerX - 8, upperFloorTop + 2.05, -14.05]);
+addBlock(0.32, 0.12, 0.1, fixtureMetalMaterial,
+  [house.centerX - 7.6, upperFloorTop + 2.42, -13.6]);
 addBlock(4.2, 1.1, 2.2, bathroomMaterial,
   [house.centerX - 14, upperFloorTop + 0.55, -4.5]);
 addBlock(2.4, 0.16, 1.45, fixtureMetalMaterial,
@@ -1197,38 +1255,154 @@ addBlock(2.4, 0.16, 1.45, fixtureMetalMaterial,
 
 const closetWoodMaterial = new THREE.MeshStandardMaterial({ color: '#76553d', roughness: 0.82 });
 const closetClothingMaterials = ['#a84f42', '#58768a', '#b69b54', '#526b4c'].map((color) =>
-  new THREE.MeshStandardMaterial({ color, roughness: 0.94 })
+  new THREE.MeshStandardMaterial({ color, roughness: 0.94, side: THREE.DoubleSide })
 );
-for (const x of [house.centerX + 7, house.centerX + 14]) {
-  addBlock(0.28, 8, 8, closetWoodMaterial, [x, upperFloorTop + 4, -11]);
-  for (const z of [-17, -11, -5]) {
-    addBlock(0.42, 0.2, 5.6, closetWoodMaterial, [x - 0.32, upperFloorTop + 7.6, z]);
-    addBlock(0.32, 0.34, 5.4, closetWoodMaterial, [x - 0.32, upperFloorTop + 1.4, z]);
+const closetGarmentShape = new THREE.Shape();
+closetGarmentShape.moveTo(-0.45, 0);
+closetGarmentShape.lineTo(0.45, 0);
+closetGarmentShape.lineTo(0.46, 0.24);
+closetGarmentShape.lineTo(0.3, 0.46);
+closetGarmentShape.lineTo(0.22, 0.36);
+closetGarmentShape.lineTo(0.2, 1.42);
+closetGarmentShape.lineTo(0.08, 1.62);
+closetGarmentShape.lineTo(-0.08, 1.62);
+closetGarmentShape.lineTo(-0.2, 1.42);
+closetGarmentShape.lineTo(-0.22, 0.36);
+closetGarmentShape.lineTo(-0.3, 0.46);
+closetGarmentShape.lineTo(-0.46, 0.24);
+closetGarmentShape.closePath();
+const closetGarmentGeometry = new THREE.ShapeGeometry(closetGarmentShape);
+const closetCabinetX = houseMaxX - 2.1;
+const closetCabinetHeight = 8;
+
+for (const centerZ of [-20.2, -4.7]) {
+  const cabinetY = upperFloorTop + closetCabinetHeight / 2;
+  const cabinetBack = closetCabinetX + 1.9;
+  addBlock(0.24, closetCabinetHeight, 6.34, closetWoodMaterial,
+    [cabinetBack, cabinetY, centerZ]);
+  for (const z of [centerZ - 3.05, centerZ + 3.05]) {
+    addBlock(3.8, closetCabinetHeight, 0.24, closetWoodMaterial,
+      [closetCabinetX, cabinetY, z]);
+  }
+  for (const y of [upperFloorTop + 0.18, upperFloorTop + closetCabinetHeight - 0.18]) {
+    addBlock(3.8, 0.24, 6.34, closetWoodMaterial,
+      [closetCabinetX, y, centerZ]);
+  }
+  addBlock(3.8, closetCabinetHeight - 0.4, 0.2, closetWoodMaterial,
+    [closetCabinetX, cabinetY, centerZ]);
+  addBlock(3.8, 0.18, 6.1, closetWoodMaterial,
+    [closetCabinetX, upperFloorTop + 7, centerZ]);
+
+  for (const side of [-1, 1]) {
+    const bayCenterZ = centerZ + side * 1.55;
+    const hangingRod = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.07, 0.07, 2.7, 12),
+      fixtureMetalMaterial
+    );
+    hangingRod.rotation.x = Math.PI / 2;
+    hangingRod.position.set(closetCabinetX - 0.9, upperFloorTop + 6.15, bayCenterZ);
+    scene.add(hangingRod);
+
+    for (let index = 0; index < 3; index += 1) {
+      const z = bayCenterZ + (index - 1) * 0.82;
+      const garment = new THREE.Mesh(
+        closetGarmentGeometry,
+        closetClothingMaterials[(index + (side > 0 ? 1 : 0)) % closetClothingMaterials.length]
+      );
+      garment.position.set(closetCabinetX - 1.05, upperFloorTop + 3.95, z);
+      garment.rotation.y = Math.PI / 2;
+      garment.castShadow = true;
+      scene.add(garment);
+    }
+
+    const drawerZ = centerZ + side * 1.55;
+    addBlock(0.18, 1.35, 2.65, closetWoodMaterial,
+      [closetCabinetX - 1.9, upperFloorTop + 0.9, drawerZ]);
+    for (const y of [upperFloorTop + 0.65, upperFloorTop + 1.15]) {
+      addBlock(0.12, 0.08, 0.54, fixtureMetalMaterial,
+        [closetCabinetX - 2.02, y, drawerZ]);
+    }
   }
 }
-for (let index = 0; index < 8; index += 1) {
-  const clothing = new THREE.Mesh(new THREE.BoxGeometry(0.55, 2.2, 0.86), closetClothingMaterials[index % closetClothingMaterials.length]);
-  clothing.position.set(house.centerX + 6.1, upperFloorTop + 5.9, -17 + index * 1.6);
-  scene.add(clothing);
-}
+
+const closetMirrorFrameMaterial = new THREE.MeshStandardMaterial({ color: '#76553d', roughness: 0.72 });
+const closetMirrorMaterial = new THREE.MeshPhysicalMaterial({
+  color: '#9eafb0',
+  metalness: 0.72,
+  roughness: 0.16,
+  side: THREE.DoubleSide
+});
+const closetBenchMaterial = new THREE.MeshStandardMaterial({ color: '#8a9b91', roughness: 0.98 });
+const closetRugMaterial = new THREE.MeshStandardMaterial({ color: '#a8987b', roughness: 0.98 });
+addBlock(0.22, 5.2, 4.1, closetMirrorFrameMaterial,
+  [upperHall.maxX + 0.32, upperFloorTop + 4.8, -13]);
+const closetMirror = new THREE.Mesh(
+  new THREE.PlaneGeometry(3.75, 4.85),
+  closetMirrorMaterial
+);
+closetMirror.position.set(upperHall.maxX + 0.46, upperFloorTop + 4.8, -13);
+closetMirror.rotation.y = Math.PI / 2;
+scene.add(closetMirror);
+addBlock(7, 0.9, 2.4, closetWoodMaterial,
+  [house.centerX + 10, upperFloorTop + 0.45, -13]);
+addBlock(6.7, 0.18, 2.1, closetBenchMaterial,
+  [house.centerX + 10, upperFloorTop + 0.96, -13]);
+addBlock(8, 0.06, 6, closetRugMaterial,
+  [house.centerX + 10, upperFloorTop + 0.03, -13], false);
 
 const bedroomWoodMaterial = new THREE.MeshStandardMaterial({ color: '#624633', roughness: 0.86 });
 const bedroomFabricMaterial = new THREE.MeshStandardMaterial({ color: '#8a9b91', roughness: 0.98 });
 const albumBedroomMaterial = new THREE.MeshStandardMaterial({ color: '#6d4d3c', roughness: 0.84 });
-for (const [centerX, bedding] of [
+const bedroomRugMaterials = [
+  new THREE.MeshStandardMaterial({ color: '#a8987b', roughness: 0.98 }),
+  new THREE.MeshStandardMaterial({ color: '#796356', roughness: 0.98 })
+];
+const bedsideLampMaterial = new THREE.MeshStandardMaterial({
+  color: '#f0d7a4',
+  emissive: '#6b4c26',
+  emissiveIntensity: 0.4,
+  roughness: 0.72
+});
+for (const [bedroomIndex, [centerX, bedding]] of [
   [house.centerX - 12, bedroomFabricMaterial],
   [house.centerX + 12, albumBedroomMaterial]
-]) {
+].entries()) {
+  addBlock(10.8, 0.08, 11, bedroomRugMaterials[bedroomIndex],
+    [centerX, upperFloorTop + 0.04, 8], false);
+  addBlock(8.8, 3.1, 0.42, bedroomWoodMaterial,
+    [centerX, upperFloorTop + 1.7, 3.95]);
   addBlock(8.5, 0.8, 7.5, bedroomWoodMaterial,
     [centerX, upperFloorTop + 0.4, 8]);
   addBlock(8.1, 0.44, 7.1, bedding,
     [centerX, upperFloorTop + 1.02, 8]);
+  addBlock(7.7, 0.18, 2.6, bedroomFabricMaterial,
+    [centerX, upperFloorTop + 1.34, 10.1]);
   addBlock(3.2, 0.4, 2, bathroomMaterial,
     [centerX - 1.8, upperFloorTop + 1.42, 5.65]);
   addBlock(3.2, 0.4, 2, bathroomMaterial,
     [centerX + 1.8, upperFloorTop + 1.42, 5.65]);
   addBlock(4.2, 0.62, 1.2, bedroomWoodMaterial,
     [centerX, upperFloorTop + 0.31, 13]);
+
+  for (const side of [-1, 1]) {
+    const nightstandX = centerX + side * 4.75;
+    addBlock(1.05, 1.35, 1.7, bedroomWoodMaterial,
+      [nightstandX, upperFloorTop + 0.675, 6.1]);
+    addBlock(1.35, 0.08, 1.58, closetWoodMaterial,
+      [nightstandX, upperFloorTop + 1.36, 6.1]);
+    const lampBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.2, 0.26, 0.16, 16),
+      fixtureMetalMaterial
+    );
+    lampBase.position.set(nightstandX, upperFloorTop + 1.48, 6.1);
+    scene.add(lampBase);
+    const lampShade = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.22, 0.38, 0.46, 16),
+      bedsideLampMaterial
+    );
+    lampShade.position.set(nightstandX, upperFloorTop + 1.79, 6.1);
+    scene.add(lampShade);
+  }
 }
 
 const loftRugMaterial = new THREE.MeshStandardMaterial({ color: '#8a6948', roughness: 0.96 });
@@ -1244,6 +1418,30 @@ const upstairsFrameMaterial = new THREE.MeshStandardMaterial({ color: '#423126',
 const upstairsPhotoLoader = new THREE.TextureLoader(worldLoadingManager);
 upstairsPhotoLoader.setCrossOrigin('anonymous');
 
+function createFallbackWallArt(title) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 384;
+  const context = canvas.getContext('2d');
+  const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, '#283d37');
+  gradient.addColorStop(1, '#a66b4b');
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = 'rgba(20, 23, 21, 0.55)';
+  context.fillRect(0, 270, canvas.width, 114);
+  context.fillStyle = '#f1ead6';
+  context.font = 'bold 24px monospace';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(title.toUpperCase(), canvas.width / 2, 302);
+  context.font = '16px monospace';
+  context.fillText('ARTWORK UNAVAILABLE', canvas.width / 2, 340);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 function addUpstairsWallArt(imagePath, title, credit, license, position, width, height, rotationY) {
   const [x, y, z] = position;
   const facesX = Math.abs(Math.sin(rotationY)) > 0.5;
@@ -1252,10 +1450,15 @@ function addUpstairsWallArt(imagePath, title, credit, license, position, width, 
     : [width + 0.3, height + 0.3, 0.24];
   addBlock(...frameDimensions, upstairsFrameMaterial, position);
 
-  const texture = upstairsPhotoLoader.load(new URL(imagePath, import.meta.url).href);
+  let photoMaterial;
+  const texture = upstairsPhotoLoader.load(new URL(imagePath, import.meta.url).href, undefined, undefined, (error) => {
+    console.warn(`Could not load wall art "${title}" from ${imagePath}; using a placeholder.`, error);
+    photoMaterial.map = createFallbackWallArt(title);
+    photoMaterial.needsUpdate = true;
+  });
   texture.colorSpace = THREE.SRGBColorSpace;
-  const photo = new THREE.Mesh(new THREE.PlaneGeometry(width, height),
-    new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide, roughness: 0.78 }));
+  photoMaterial = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide, roughness: 0.78 });
+  const photo = new THREE.Mesh(new THREE.PlaneGeometry(width, height), photoMaterial);
   photo.position.set(
     x + (facesX ? Math.sin(rotationY) * 0.14 : 0),
     y,
@@ -1286,9 +1489,9 @@ function addUpstairsWallArt(imagePath, title, credit, license, position, width, 
 
 const westBedroomArtX = upperHall.minX - 0.5;
 const eastBedroomArtX = upperHall.maxX + 0.5;
-addUpstairsWallArt('./assets/mf-doom-live.jpg', 'MF DOOM', 'Possan', 'CC BY 2.0',
+addUpstairsWallArt(mfDoomImageUrl, 'MF DOOM', 'Possan', 'CC BY-SA 3.0',
   [westBedroomArtX, upperFloorTop + 5.7, 3.2], 4.9, 3.2, -Math.PI / 2);
-addUpstairsWallArt('./assets/mf-doom-hultsfred.jpg', 'MF DOOM', 'Possan', 'CC BY-SA 3.0',
+addUpstairsWallArt(mfDoomImageUrl, 'MF DOOM', 'Possan', 'CC BY-SA 3.0',
   [westBedroomArtX, upperFloorTop + 5.3, 11.1], 3.3, 4.8, -Math.PI / 2);
 addUpstairsWallArt('./assets/people-under-the-stairs.jpg', 'People Under The Stairs', 'Piecelock70', 'CC BY-SA 3.0',
   [eastBedroomArtX, upperFloorTop + 5.5, 3.1], 4.2, 4.2, Math.PI / 2);
@@ -1515,9 +1718,40 @@ for (const flag of spawnFlags) {
   spawnFlagCursor += flag.width + spawnFlagGap;
 }
 const spawnFlagFrameMaterial = new THREE.MeshStandardMaterial({ color: '#b18a57', roughness: 0.82 });
+const spawnFlagRopeMaterial = new THREE.MeshStandardMaterial({ color: '#785e43', roughness: 0.94 });
 const spawnFlagHeightPosition = platformTop + 10.3;
 
+function addSpawnBannerRope(axis, fixed, coordinates) {
+  const ropeAnchor = 15.4;
+  const topBarTop = spawnFlagHeightPosition + spawnFlagHeight / 2 + 0.045;
+  const anchorHeight = topBarTop + 0.65;
+  const pointAt = (coordinate, height) => axis === 'z'
+    ? new THREE.Vector3(coordinate, height, fixed)
+    : new THREE.Vector3(fixed, height, coordinate);
+  const curve = new THREE.QuadraticBezierCurve3(
+    pointAt(-ropeAnchor, anchorHeight),
+    pointAt(0, anchorHeight - 0.9),
+    pointAt(ropeAnchor, anchorHeight)
+  );
+  const rope = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.045, 6, false), spawnFlagRopeMaterial);
+  rope.castShadow = true;
+  scene.add(rope);
+
+  for (const coordinate of coordinates) {
+    const ropeHeight = curve.getPoint((coordinate + ropeAnchor) / (ropeAnchor * 2)).y;
+    const cordHeight = ropeHeight - topBarTop;
+    const cord = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.025, 0.025, cordHeight, 6),
+      spawnFlagRopeMaterial
+    );
+    if (axis === 'z') cord.position.set(coordinate, topBarTop + cordHeight / 2, fixed);
+    else cord.position.set(fixed, topBarTop + cordHeight / 2, coordinate);
+    scene.add(cord);
+  }
+}
+
 function addSpawnFlagRow(axis, fixed, coordinates, rotationY) {
+  addSpawnBannerRope(axis, fixed, coordinates);
   for (let index = 0; index < spawnFlags.length; index += 1) {
     const flag = spawnFlags[index];
     const position = axis === 'z'
@@ -1758,7 +1992,6 @@ function updateWorldSettings() {
   skyUniforms.daylight.value = daylight;
   skyUniforms.twilight.value = twilight;
   skyUniforms.moonDarkening.value = twilight;
-  skyUniforms.sunDirection.value.copy(sunGlow.position).sub(camera.position).normalize();
   skyUniforms.moonDirection.value.copy(moon.position).sub(camera.position).normalize();
   scene.background.copy(nightBackgroundColor).lerp(dayBackgroundColor, daylight);
   scene.fog.color.copy(nightBackgroundColor).lerp(dayBackgroundColor, daylight);
@@ -2271,9 +2504,6 @@ resize();
 
 async function prepareWorld() {
   await worldAssetsLoaded;
-  if (failedWorldAssets.length > 0) {
-    throw new Error(`Could not load world assets: ${failedWorldAssets.join(', ')}`);
-  }
 
   setLoadingProgress(68, 'Preparing scene shaders…');
   await renderer.compileAsync(scene, camera);
@@ -2358,7 +2588,6 @@ function animate(now) {
   flashlight.position.copy(camera.position).addScaledVector(flashlightDirection, 0.3);
   flashlight.target.position.copy(camera.position).addScaledVector(flashlightDirection, 38);
   skyDome.position.copy(camera.position);
-  skyUniforms.sunDirection.value.copy(sunGlow.position).sub(camera.position).normalize();
   skyUniforms.moonDirection.value.copy(moon.position).sub(camera.position).normalize();
 
   renderer.render(scene, camera);
