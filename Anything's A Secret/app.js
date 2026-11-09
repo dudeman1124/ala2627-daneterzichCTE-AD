@@ -1,4 +1,8 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/shaders/FXAAShader.js';
 
 const mfDoomImageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/' +
   'MF_Doom_-_Hultsfred_2011_%28cropped%29.jpg/960px-MF_Doom_-_Hultsfred_2011_%28cropped%29.jpg';
@@ -20,6 +24,12 @@ const remoteStatus = document.querySelector('#remote-status');
 const remoteKeypad = document.querySelector('#remote-keypad');
 const remoteTuneButton = document.querySelector('#remote-tune');
 const timeOfDayInputs = document.querySelectorAll('input[name="time-of-day"]');
+const graphicsQualityButtons = document.querySelectorAll('[data-graphics-quality]');
+const shadowsToggle = document.querySelector('#shadows-toggle');
+const antialiasingToggle = document.querySelector('#antialiasing-toggle');
+const ultraWarning = document.querySelector('#ultra-warning');
+const cancelUltraButton = document.querySelector('#cancel-ultra');
+const confirmUltraButton = document.querySelector('#confirm-ultra');
 const mouseToggle = document.querySelector('#mouse-toggle');
 const mouseLabel = document.querySelector('#mouse-label');
 const passwordForm = document.querySelector('#password-form');
@@ -32,6 +42,29 @@ const passwordIndexPanel = document.querySelector('#password-index-panel');
 const passwordFilters = document.querySelector('#password-filters');
 const passwordList = document.querySelector('#password-list');
 const worldLoadingManager = new THREE.LoadingManager();
+const graphicsQualityProfiles = {
+  low: { pixelRatio: 1, shadowMapSize: 512, shadowType: THREE.BasicShadowMap },
+  normal: { pixelRatio: 1.25, shadowMapSize: 1024, shadowType: THREE.PCFShadowMap },
+  high: { pixelRatio: 1.5, shadowMapSize: 1536, shadowType: THREE.PCFSoftShadowMap },
+  ultra: { pixelRatio: 2, shadowMapSize: 2048, shadowType: THREE.PCFSoftShadowMap }
+};
+let activeGraphicsQuality = 'normal';
+try {
+  const savedGraphicsQuality = localStorage.getItem('anything-a-secret-graphics-quality');
+  if (Object.prototype.hasOwnProperty.call(graphicsQualityProfiles, savedGraphicsQuality)) {
+    activeGraphicsQuality = savedGraphicsQuality;
+  }
+} catch {}
+function readGraphicsToggle(key, defaultValue) {
+  try {
+    const savedValue = localStorage.getItem(key);
+    return savedValue === null ? defaultValue : savedValue === 'true';
+  } catch {
+    return defaultValue;
+  }
+}
+let shadowsEnabled = readGraphicsToggle('anything-a-secret-shadows', true);
+let antialiasingEnabled = readGraphicsToggle('anything-a-secret-antialiasing', true);
 let resolveWorldAssetsLoaded;
 const worldAssetsLoaded = new Promise((resolve) => {
   resolveWorldAssetsLoaded = resolve;
@@ -115,13 +148,17 @@ scene.add(skyDome);
 
 const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1400);
 camera.rotation.order = 'YXZ';
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, graphicsQualityProfiles[activeGraphicsQuality].pixelRatio));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.12;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = shadowsEnabled;
+renderer.shadowMap.type = graphicsQualityProfiles[activeGraphicsQuality].shadowType;
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const antialiasingPass = new ShaderPass(FXAAShader);
+composer.addPass(antialiasingPass);
 
 const ambient = new THREE.HemisphereLight('#e8f4df', '#6a704a', 2.1);
 scene.add(ambient);
@@ -2213,6 +2250,47 @@ function toggleSettings() {
 
 closeSettingsButton.addEventListener('click', () => setSettingsOpen(false));
 
+shadowsToggle.checked = shadowsEnabled;
+shadowsToggle.addEventListener('change', () => setRenderingOption('shadows', shadowsToggle.checked));
+antialiasingToggle.checked = antialiasingEnabled;
+antialiasingToggle.addEventListener('change', () => setRenderingOption('antialiasing', antialiasingToggle.checked));
+
+let ultraWarningReturnFocus = null;
+
+function closeUltraWarning() {
+  ultraWarning.hidden = true;
+  settingsPanel.inert = false;
+  if (ultraWarningReturnFocus instanceof HTMLElement && ultraWarningReturnFocus.isConnected) {
+    ultraWarningReturnFocus.focus();
+  }
+}
+
+function openUltraWarning(button) {
+  ultraWarningReturnFocus = button;
+  settingsPanel.inert = true;
+  ultraWarning.hidden = false;
+  cancelUltraButton.focus();
+}
+
+graphicsQualityButtons.forEach((button) => {
+  button.setAttribute('aria-pressed', String(button.dataset.graphicsQuality === activeGraphicsQuality));
+  button.addEventListener('click', () => {
+    const quality = button.dataset.graphicsQuality;
+    if (quality === activeGraphicsQuality) return;
+    if (quality === 'ultra') {
+      openUltraWarning(button);
+      return;
+    }
+    setGraphicsQuality(quality);
+  });
+});
+
+cancelUltraButton.addEventListener('click', closeUltraWarning);
+confirmUltraButton.addEventListener('click', () => {
+  setGraphicsQuality('ultra');
+  closeUltraWarning();
+});
+
 enterButton.addEventListener('click', () => {
   if (worldLoadFailed) {
     window.location.reload();
@@ -2258,6 +2336,12 @@ document.addEventListener('keydown', (event) => {
   const target = event.target;
   const isTyping = target instanceof HTMLElement &&
     (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+
+  if (event.code === 'Escape' && !ultraWarning.hidden) {
+    event.preventDefault();
+    closeUltraWarning();
+    return;
+  }
 
   if (event.code === 'Escape' && !settingsPanel.hidden) {
     event.preventDefault();
@@ -2491,15 +2575,68 @@ function canReachGroundAt(x, z) {
   return groundHeightAt(x, z) <= feetHeight + (insideStairwell ? stairStepHeightTolerance : 0.04);
 }
 
+function setGraphicsQuality(quality) {
+  activeGraphicsQuality = quality;
+  applyGraphicsQuality();
+  graphicsQualityButtons.forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.graphicsQuality === quality));
+  });
+  try {
+    localStorage.setItem('anything-a-secret-graphics-quality', quality);
+  } catch {}
+}
+
+function setRenderingOption(option, enabled) {
+  if (option === 'shadows') shadowsEnabled = enabled;
+  else antialiasingEnabled = enabled;
+  applyGraphicsQuality();
+  try {
+    localStorage.setItem(`anything-a-secret-${option}`, String(enabled));
+  } catch {}
+}
+
+function applyGraphicsQuality() {
+  const profile = graphicsQualityProfiles[activeGraphicsQuality];
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, profile.pixelRatio);
+  renderer.setPixelRatio(pixelRatio);
+  composer.setPixelRatio(pixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight, false);
+  composer.setSize(window.innerWidth, window.innerHeight);
+  antialiasingPass.material.uniforms.resolution.value.set(
+    1 / (window.innerWidth * pixelRatio),
+    1 / (window.innerHeight * pixelRatio)
+  );
+  renderer.shadowMap.enabled = shadowsEnabled;
+  renderer.shadowMap.type = profile.shadowType;
+  if (sun.shadow.map) {
+    sun.shadow.map.dispose();
+    sun.shadow.map = null;
+  }
+  sun.shadow.mapSize.set(profile.shadowMapSize, profile.shadowMapSize);
+  sun.shadow.needsUpdate = true;
+}
+
 function resize() {
   const width = window.innerWidth;
   const height = window.innerHeight;
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height, false);
+  composer.setSize(width, height);
+  const pixelRatio = renderer.getPixelRatio();
+  antialiasingPass.material.uniforms.resolution.value.set(
+    1 / (width * pixelRatio),
+    1 / (height * pixelRatio)
+  );
+}
+
+function renderFrame() {
+  if (antialiasingEnabled) composer.render();
+  else renderer.render(scene, camera);
 }
 
 window.addEventListener('resize', resize);
+applyGraphicsQuality();
 resize();
 
 async function prepareWorld() {
@@ -2510,10 +2647,10 @@ async function prepareWorld() {
 
   setLoadingProgress(84, 'Warming up the scene…');
   await new Promise((resolve) => requestAnimationFrame(resolve));
-  renderer.render(scene, camera);
+  renderFrame();
   setLoadingProgress(94, 'Finishing world setup…');
   await new Promise((resolve) => requestAnimationFrame(resolve));
-  renderer.render(scene, camera);
+  renderFrame();
 
   worldReady = true;
   loadingPanel.hidden = true;
@@ -2590,7 +2727,7 @@ function animate(now) {
   skyDome.position.copy(camera.position);
   skyUniforms.moonDirection.value.copy(moon.position).sub(camera.position).normalize();
 
-  renderer.render(scene, camera);
+  renderFrame();
 }
 
 prepareWorld().catch((error) => {

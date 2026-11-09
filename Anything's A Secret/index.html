@@ -8,6 +8,14 @@
   <meta name="description" content="Step into Anything's A Secret, an immersive first-person puzzle world.">
   <title>Anything's A Secret</title>
   <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 
 <body>
@@ -114,6 +122,42 @@
               <label><input type="radio" name="time-of-day" value="night"><span>NIGHT</span></label>
             </div>
           </fieldset>
+          <fieldset class="quality-setting">
+            <legend>GRAPHICS QUALITY</legend>
+            <div class="quality-options" aria-label="Graphics quality">
+              <button class="quality-option" type="button" data-graphics-quality="low" aria-pressed="false">LOW</button>
+              <button class="quality-option" type="button" data-graphics-quality="normal"
+                aria-pressed="false">NORMAL</button>
+              <button class="quality-option" type="button" data-graphics-quality="high"
+                aria-pressed="false">HIGH</button>
+              <button class="quality-option" type="button" data-graphics-quality="ultra"
+                aria-pressed="false">ULTRA</button>
+            </div>
+          </fieldset>
+          <fieldset class="render-options">
+            <legend>RENDERING OPTIONS</legend>
+            <label class="render-toggle">
+              <input id="shadows-toggle" type="checkbox" checked>
+              <span>SHADOWS</span>
+            </label>
+            <label class="render-toggle">
+              <input id="antialiasing-toggle" type="checkbox" checked>
+              <span>ANTI-ALIASING</span>
+            </label>
+          </fieldset>
+        </div>
+      </div>
+    </section>
+
+    <section id="ultra-warning" class="settings-panel ultra-warning" aria-labelledby="ultra-warning-title"
+      aria-modal="true" role="alertdialog" hidden>
+      <div class="settings-card warning-card">
+        <h2 id="ultra-warning-title">WARNING</h2>
+        <p>WARNING: If you continue with this, your game may be extremely laggy. Please be sure your computer can run
+          this. Would you like to proceed?</p>
+        <div class="warning-actions">
+          <button id="cancel-ultra" type="button">No</button>
+          <button id="confirm-ultra" class="confirm-ultra" type="button">Yes</button>
         </div>
       </div>
     </section>
