@@ -35,6 +35,8 @@ const projectDirectories = new Map([
   ['3d space', '3D Space'],
   ["anything's a secret", "Anything's A Secret"],
   ['anything secret', "Anything's A Secret"],
+  ['silence among monsters', 'Silence Among Monsters'],
+  ['silence', 'Silence Among Monsters'],
   ['assignments/01-this-is-me', 'assignments/01-this-is-me']
 ]);
 

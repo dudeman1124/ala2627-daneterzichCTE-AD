@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11100f">
+  <title>Silence Among Monsters</title>
+  <meta name="description" content="A quiet first-person bedroom prototype. Stay still, mind the switches, and hide when you need to.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="back-link" href="../">DT / PROJECTS</a>
+      <p class="room-status"><span class="status-light"></span><span id="room-status">THE HOUSE IS QUIET</span></p>
+    </header>
+
+    <section class="game-frame" aria-label="Silence Among Monsters first-person bedroom">
+      <canvas id="room" aria-label="A first-person view inside a bedroom" tabindex="0"></canvas>
+
+      <div class="game-title" aria-hidden="true">
+        <p>AN INTERACTIVE NIGHTMARE</p>
+        <h1>Silence <em>Among</em><br>Monsters</h1>
+      </div>
+
+      <div class="scene-caption" aria-live="polite">
+        <span class="caption-rule"></span>
+        <p id="scene-caption">The room is still. The fan waits above you.</p>
+      </div>
+
+      <div class="crosshair" aria-hidden="true"><span></span><i></i></div>
+      <div id="interaction-prompt" class="interaction-prompt" role="status" aria-live="polite" hidden>
+        <kbd>E</kbd><span id="interaction-label">TOGGLE THE LIGHT</span>
+      </div>
+
+      <div class="room-readout" aria-hidden="true">
+        <span>BEDROOM</span>
+        <span>20 × 25 × 8 FT</span>
+      </div>
+
+      <div id="start-screen" class="start-screen">
+        <div class="start-card">
+          <p class="eyebrow">01:17 AM &nbsp; / &nbsp; SOMEWHERE SAFE</p>
+          <h2>Listen to the quiet.</h2>
+          <p class="start-copy">A room of your own. For now, that is enough.</p>
+          <div class="control-list">
+            <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><i>MOVE</i></span>
+            <span><kbd>MOUSE</kbd><i>LOOK AROUND</i></span>
+            <span><kbd>E</kbd><i>USE A WALL SWITCH</i></span>
+            <span><kbd>H</kbd><i>HIDE UNDER THE BED</i></span>
+          </div>
+          <button id="start-button" type="button">Enter the room <span aria-hidden="true">↗</span></button>
+          <p id="start-note" class="start-note">Click to begin · Esc to pause</p>
+        </div>
+      </div>
+
+      <div id="pause-screen" class="pause-screen" hidden>
+        <div class="pause-card">
+          <p class="eyebrow">TAKE A BREATH</p>
+          <h2>The room is still.</h2>
+          <button id="resume-button" type="button">Return to the room <span aria-hidden="true">↗</span></button>
+          <p class="start-note">You can take your time.</p>
+        </div>
+      </div>
+
+      <div id="hidden-indicator" class="hidden-indicator" hidden>
+        <span class="hidden-dot"></span>
+        <span>UNDER THE BED</span>
+        <span class="hidden-instruction"><kbd>H</kbd> COME OUT</span>
+      </div>
+    </section>
+
+    <footer class="bottom-bar">
+      <p>NOTHING IN THE ROOM IS IN A HURRY.</p>
+      <p>AN EARLY ROOM-SCALE PROTOTYPE <span>·</span> <a href="../">BACK TO THE HOUSE</a></p>
+    </footer>
+  </main>
+</body>
+
+</html>
